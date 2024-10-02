@@ -52,8 +52,10 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
   let endCursor: string | null = null;
   const firstPRTimes: { [key: string]: number } = {};
 
+  let pageNumber = 0;
+  const maxPages = 3;
   try {
-    while (hasNextPage) {
+    while (hasNextPage && pageNumber < maxPages) {
       const data = (await git_repo.getData(query, {
         owner,
         name,
@@ -73,9 +75,13 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
 
       hasNextPage = data.data.repository.pullRequests.pageInfo.hasNextPage;
       endCursor = data.data.repository.pullRequests.pageInfo.endCursor;
+      pageNumber++;
     }
 
     const firstPRDates = Object.values(firstPRTimes);
+    if (firstPRDates.length === 0) {
+      return 0.5;
+    }
     const least = Math.min(...firstPRDates);
     const most = Math.max(...firstPRDates);
     const averageFirstPRTime = least / most;
@@ -95,10 +101,15 @@ export async function getNpmRampUp(packageName: string): Promise<number> {
   try {
     const response = await npm_repo.getData();
     if (response) {
-      const response_splitted = response.split("/");
-      owner = response.split("/")[response_splitted.length - 2];
-
-      name = response.split("/")[response_splitted.length - 1].split(".")[0];
+      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
+      const url = new URL(cleanUrl);
+      const pathnameParts = url.pathname.split("/").filter(Boolean);
+      if (pathnameParts.length === 2) {
+        owner = pathnameParts[0];
+        name = pathnameParts[1];
+      } else {
+        throw new Error(`Invalid package URL: ${response}`);
+      }
     }
   } catch (error) {
     logger.error(`Error fetching package info for ${packageName}:`, error);

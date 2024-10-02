@@ -2,11 +2,13 @@ import { MetricCalculatorFactory } from "./MetricCalculator.js";
 
 async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string>> {
   const calculator = MetricCalculatorFactory.create(repo);
-  const correctness = await calculator.calculateCorrectness(ownerOrPackage, repo);
-  const licenseCompatibility = await calculator.calculateLicenseCompatibility(ownerOrPackage, repo);
-  const rampUp = await calculator.calculateRampUp(ownerOrPackage, repo);
-  const responsiveness = await calculator.calculateResponsiveness(ownerOrPackage, repo);
-  const busFactor = await calculator.calculateBusFactor(ownerOrPackage, repo);
+  const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor] = await Promise.all([
+    calculator.calculateCorrectness(ownerOrPackage, repo),
+    calculator.calculateLicenseCompatibility(ownerOrPackage, repo),
+    calculator.calculateRampUp(ownerOrPackage, repo),
+    calculator.calculateResponsiveness(ownerOrPackage, repo),
+    calculator.calculateBusFactor(ownerOrPackage, repo)
+  ]);
 
   const netscore =
     0.15 * busFactor.result +

@@ -1,6 +1,11 @@
 import getCommitsByUser from "../metrics/BusFactor.js";
 import { getNpmCommitsbyUser } from "../metrics/BusFactor.js";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
+
+beforeAll(async () => {
+  vi.spyOn(console, "log").mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
+});
 
 describe("BusFactor Module", () => {
   describe("getCommitsByUser", () => {

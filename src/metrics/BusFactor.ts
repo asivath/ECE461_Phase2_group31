@@ -36,8 +36,10 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
   const userCommits: { [key: string]: number } = {};
   let busfactor: number = 0;
 
+  let pagesFetched = 0;
+  const maxPages = 1;
   try {
-    while (hasNextPage) {
+    while (hasNextPage && pagesFetched < maxPages) {
       const data = (await git_repo.getData(query, {
         owner,
         name,
@@ -92,6 +94,7 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
 
       hasNextPage = data.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage;
       endCursor = data.data.repository.defaultBranchRef.target.history.pageInfo.endCursor;
+      pagesFetched++;
     }
     const commitnumbers: number[] = [];
 
@@ -127,10 +130,15 @@ export async function getNpmCommitsbyUser(packageName: string): Promise<number> 
   try {
     const response = await npm_repo.getData();
     if (response) {
-      const response_splitted = response.split("/");
-      owner = response.split("/")[response_splitted.length - 2];
-
-      name = response.split("/")[response_splitted.length - 1].split(".")[0];
+      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
+      const url = new URL(cleanUrl);
+      const pathnameParts = url.pathname.split("/").filter(Boolean);
+      if (pathnameParts.length === 2) {
+        owner = pathnameParts[0];
+        name = pathnameParts[1];
+      } else {
+        throw new Error(`Invalid package URL: ${response}`);
+      }
     }
   } catch (error) {
     logger.error(`Error fetching package info for ${packageName}:`, error);

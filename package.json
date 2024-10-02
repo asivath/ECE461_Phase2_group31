@@ -68,7 +68,8 @@
     "test:cicd": "vitest run --coverage --no-color",
     "lint": "eslint '**/*.{ts,mjs,json}' --fix",
     "format": "prettier --write '**/*.{ts,mjs,json}'",
-    "quality": "npm run format && npm run lint"
+    "quality": "npm run format && npm run lint",
+    "build": "tsc"
   },
   "description": "ECE 461 Project Phase 2",
   "bugs": {

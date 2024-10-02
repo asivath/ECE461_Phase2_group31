@@ -1,69 +1,55 @@
 import { spawn } from "child_process";
-import * as fs from "fs";
+import fs from "fs/promises";
+import path from "path";
 
 export class TestCommand {
   public static run(): void {
-    // console.log('Running tests...');
     this.runTests((testError) => {
       if (testError) {
         console.error("Error running tests:", testError);
-        process.exit(0); // Exit with a non-zero status code to indicate failure
+        process.exit(1);
       } else {
-        process.exit(0); // Exit with a zero status code to indicate success
+        process.exit(0);
       }
     });
   }
 
-  private static runTests(callback: (error: string | null) => void): void {
-    const testProcess = spawn("npx", ["jest", "--coverage", "--config", "jest.config.cjs"]);
+  private static async runTests(callback: (error: string | null) => void): Promise<void> {
+    try {
+      const testProcess = spawn("npm", ["run", "test:coverage"]);
 
-    const stdoutStream = fs.createWriteStream("test-output.txt");
-    const stderrStream = fs.createWriteStream("test-error.txt");
+      let testOutput = "";
 
-    testProcess.stdout.pipe(stdoutStream);
-    testProcess.stderr.pipe(stderrStream);
-
-    testProcess.on("close", (code) => {
-      stdoutStream.close();
-      stderrStream.close();
-
-      if (code !== 0) {
-        return callback(`Test process exited with code ${code}`);
-      }
-
-      // Read the test results from the file
-      fs.readFile("test-error.txt", "utf8", (err, testData) => {
-        if (err) {
-          return callback(`Error reading test results: ${err.message}`);
-        }
-
-        // Read the coverage information from the file
-        fs.readFile("test-output.txt", "utf8", (err, coverageData) => {
-          if (err) {
-            return callback(`Error reading coverage information: ${err.message}`);
-          }
-
-          // Regular expressions to match the required patterns
-          const testPattern = /Tests:\s*(\d+)\s*passed,\s*(\d+)\s*total/;
-          const testMatch = testData.match(testPattern);
-
-          const coveragePattern = /All files\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*\d+\.\d+\s*\|\s*(\d+\.\d+)/;
-          const coverageMatch = coverageData.match(coveragePattern);
-
-          if (testMatch && coverageMatch) {
-            const passedTests = parseInt(testMatch[1]);
-            const totalTests = parseInt(testMatch[2]);
-            const lineCoverage = parseInt(coverageMatch[1]);
-
-            const formattedOutput = `${passedTests}/${totalTests} test cases passed. ${lineCoverage}% line coverage achieved.`;
-
-            console.log(formattedOutput);
-            callback(null);
-          } else {
-            callback("Error parsing test results or coverage information");
-          }
-        });
+      testProcess.stdout.on("data", (data) => {
+        testOutput += data.toString();
       });
-    });
+
+      testProcess.on("close", async (code) => {
+        if (code !== 0) {
+          return callback(`Test process exited with code ${code}`);
+        }
+        // Read the test results from the file
+        const coveragePath = path.join(process.cwd(), "coverage", "coverage-summary.json");
+        const results = await fs.readFile(coveragePath, "utf-8");
+        const coverage = JSON.parse(results);
+        const totalCoverage = parseInt(coverage.total.lines.pct);
+        const testPattern = /Tests\s+(\d+)\s+passed\s+\((\d+)\)/;
+        const testMatch = testOutput.match(testPattern);
+        let passedTests = 0;
+        let totalTests = 0;
+        if (testMatch) {
+          passedTests = parseInt(testMatch[1]);
+          totalTests = parseInt(testMatch[2]);
+        } else {
+          return callback("Error parsing test results from output.");
+        }
+        console.log(`Total: ${totalTests}`);
+        console.log(`Passed: ${passedTests}`);
+        console.log(`Coverage: ${totalCoverage}%`);
+        console.log(`${passedTests}/${totalTests} tests passed. ${totalCoverage}% line coverage achieved.`);
+      });
+    } catch (error) {
+      callback((error as Error).message);
+    }
   }
 }

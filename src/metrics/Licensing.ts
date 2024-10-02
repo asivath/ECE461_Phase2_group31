@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { simpleGit } from "simple-git";
 import { NPM } from "../api.js"; // Replace with the actual NPM library you are using
@@ -41,15 +41,14 @@ const compatibilityTable: { [key: string]: number } = {
   "CC-BY-NC-ND-4.0": 0
 };
 
-async function clearTmpDirectory(dir: string) {
-  if (fs.existsSync(dir)) {
-    const files = fs.readdirSync(dir);
-    if (files.length > 0) {
-      fs.rmSync(dir, { recursive: true, force: true });
-      fs.mkdirSync(dir, { recursive: true });
+async function clearTmpDirectory(dir: string): Promise<void> {
+  try {
+    await fs.rm(dir, { recursive: true, force: true });
+    await fs.mkdir(dir, { recursive: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.error(`Error clearing tmp directory ${dir}:`, error);
     }
-  } else {
-    fs.mkdirSync(dir, { recursive: true });
   }
 }
 
@@ -57,12 +56,18 @@ async function cloneRepository(url: string, dir: string) {
   await clearTmpDirectory(dir);
   await git.clone(url, dir, ["--depth", "1"]);
 }
+
 async function getLicense(dir: string): Promise<string | null> {
   const licenseFilePath = path.join(dir, "LICENSE");
-  if (fs.existsSync(licenseFilePath)) {
-    return fs.readFileSync(licenseFilePath, "utf8");
+  try {
+    const licenseContent = await fs.readFile(licenseFilePath, "utf8");
+    return licenseContent;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.error(`Error clearing tmp directory ${dir}:`, error);
+    }
+    return null;
   }
-  return null;
 }
 
 function determineLicenseScore(licenseContent: string): number {
@@ -95,13 +100,20 @@ async function checkLicenseCompatibility(owner: string, repo: string): Promise<n
 export { checkLicenseCompatibility, determineLicenseScore };
 export async function checkLicenseCompatibilityNPM(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
-
+  let owner: string = "";
+  let name: string = "";
   try {
     const response = await npm_repo.getData();
     if (response) {
-      const response_splitted = response.split("/");
-      const owner: string = response.split("/")[response_splitted.length - 2];
-      const name: string = response.split("/")[response_splitted.length - 1].split(".")[0];
+      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
+      const url = new URL(cleanUrl);
+      const pathnameParts = url.pathname.split("/").filter(Boolean);
+      if (pathnameParts.length === 2) {
+        owner = pathnameParts[0];
+        name = pathnameParts[1];
+      } else {
+        throw new Error(`Invalid package URL: ${response}`);
+      }
       return await checkLicenseCompatibility(owner, name);
     }
   } catch (error) {

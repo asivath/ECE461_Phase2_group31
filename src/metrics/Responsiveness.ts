@@ -90,6 +90,10 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
 
     const issues: Issue[] = issue_result.data.repository.issues.edges;
 
+    if (issues.length === 0) {
+      return 0.5;
+    }
+
     issues.forEach((issue: Issue) => {
       const createdAt: Date = new Date(issue.node.createdAt);
       const firstComment = issue.node.comments.edges[0];
@@ -115,13 +119,20 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
 
 export async function getNpmResponsiveness(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
-
+  let owner: string = "";
+  let name: string = "";
   try {
     const response = await npm_repo.getData();
     if (response) {
-      const response_splitted = response.split("/");
-      const owner: string = response.split("/")[response_splitted.length - 2];
-      const name: string = response.split("/")[response_splitted.length - 1].split(".")[0];
+      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
+      const url = new URL(cleanUrl);
+      const pathnameParts = url.pathname.split("/").filter(Boolean);
+      if (pathnameParts.length === 2) {
+        owner = pathnameParts[0];
+        name = pathnameParts[1];
+      } else {
+        throw new Error(`Invalid package URL: ${response}`);
+      }
       return await getIssueResponseTimes(owner, name);
     }
   } catch (error) {

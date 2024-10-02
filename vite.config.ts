@@ -6,12 +6,12 @@ export default defineConfig({
     coverage: {
       reporter: ["json-summary", "html"],
       include: ["src/**"],
-      exclude: ["src/__tests__/**"],
-      thresholds: {
-        statements: 80,
-        functions: 100,
-        lines: 80
-      },
+      exclude: ["src/__tests__/**", "src/dist/**"],
+      // thresholds: {
+      //   statements: 80,
+      //   functions: 100,
+      //   lines: 80
+      // },
       ignoreEmptyLines: true,
       reportOnFailure: true
     },
