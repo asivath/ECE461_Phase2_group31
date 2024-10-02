@@ -28,15 +28,15 @@ const issues_query = `
     }
   }
 `;
-interface RepoQueryResponse {
+type RepoQueryResponse = {
   data: {
     repository: {
       diskUsage: number;
     };
   };
-}
+};
 
-interface Issue {
+type Issue = {
   node: {
     createdAt: string;
     comments: {
@@ -47,9 +47,9 @@ interface Issue {
       }[];
     };
   };
-}
+};
 
-interface IssueQueryResponse {
+type IssueQueryResponse = {
   data: {
     repository: {
       issues: {
@@ -57,12 +57,9 @@ interface IssueQueryResponse {
       };
     };
   };
-}
+};
 
-export async function getIssueResponseTimes(
-  owner: string,
-  name: string
-): Promise<number> {
+export async function getIssueResponseTimes(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(name, owner);
 
   const responseTimes: number[] = [];
@@ -71,7 +68,7 @@ export async function getIssueResponseTimes(
   try {
     const repo_result: RepoQueryResponse = await git_repo.getData(repo_query, {
       owner,
-      name,
+      name
     });
 
     const repoSize: number = repo_result.data.repository.diskUsage / 1024;
@@ -84,14 +81,11 @@ export async function getIssueResponseTimes(
       number_of_issues = 80;
     }
 
-    const issue_result: IssueQueryResponse = await git_repo.getData(
-      issues_query,
-      {
-        owner,
-        name,
-        first: number_of_issues,
-      }
-    );
+    const issue_result: IssueQueryResponse = await git_repo.getData(issues_query, {
+      owner,
+      name,
+      first: number_of_issues
+    });
 
     const issues: Issue[] = issue_result.data.repository.issues.edges;
 
@@ -100,21 +94,15 @@ export async function getIssueResponseTimes(
       const firstComment = issue.node.comments.edges[0];
       if (firstComment) {
         const firstResponseAt: Date = new Date(firstComment.node.createdAt);
-        const responseTime: number =
-          (firstResponseAt.getTime() - createdAt.getTime()) /
-          (1000 * 60 * 60 * 24 * 30); // in months
+        const responseTime: number = (firstResponseAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 30); // in months
         responseTimes.push(responseTime);
       }
     });
 
     responseTimes.sort((a, b) => a - b);
 
-    const totalResponseTime: number = responseTimes.reduce(
-      (sum, time) => sum + time,
-      0
-    );
-    const averageResponseTime: number =
-      totalResponseTime / responseTimes.length;
+    const totalResponseTime: number = responseTimes.reduce((sum, time) => sum + time, 0);
+    const averageResponseTime: number = totalResponseTime / responseTimes.length;
 
     const Responsiveness: number = 1 - averageResponseTime / number_of_issues;
     return Responsiveness;
@@ -132,9 +120,7 @@ export async function getNpmResponsiveness(packageName: string): Promise<any> {
     if (response) {
       const response_splitted = response.split("/");
       const owner: string = response.split("/")[response_splitted.length - 2];
-      const name: string = response
-        .split("/")
-        [response_splitted.length - 1].split(".")[0];
+      const name: string = response.split("/")[response_splitted.length - 1].split(".")[0];
       return await getIssueResponseTimes(owner, name);
     }
   } catch (error) {

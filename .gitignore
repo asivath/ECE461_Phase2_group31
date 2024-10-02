@@ -3,3 +3,5 @@ yarn.lock
 .env
 dist
 coverage
+.txt
+.log

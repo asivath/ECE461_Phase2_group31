@@ -18,18 +18,18 @@ export class GitHub extends API {
     this.owner_name = own_name;
   }
 
-  public async getData(request_string: string, args?: any): Promise<any> {    
+  public async getData(request_string: string, args?: any): Promise<any> {
     const url = "https://api.github.com/graphql";
     const headers = {
-      Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+      Authorization: `Bearer ${env.GITHUB_TOKEN}`
     };
     const data = {
       query: request_string,
       variables: {
         owner: this.owner_name,
         repo: this.package_name,
-        ...args,
-      },
+        ...args
+      }
     };
     try {
       const response = await axios.post(url, data, { headers });
@@ -68,4 +68,3 @@ export class NPM extends API {
     }
   }
 }
-

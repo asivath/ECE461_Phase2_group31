@@ -1,4 +1,4 @@
-import { NPM,GitHub } from "../api.js";
+import { NPM, GitHub } from "../api.js";
 
 const query = `
   query($owner: String!, $name: String!, $after: String) {
@@ -21,10 +21,7 @@ const query = `
   }
 `;
 
-async function calculateAverageTimeForFirstPR(
-  owner: string,
-  name: string
-): Promise<number> {
+async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(owner, name);
 
   let hasNextPage = true;
@@ -36,7 +33,7 @@ async function calculateAverageTimeForFirstPR(
       const data = await git_repo.getData(query, {
         owner,
         name,
-        after: endCursor,
+        after: endCursor
       });
 
       const pullRequests = data.data.repository.pullRequests.edges;
@@ -56,7 +53,7 @@ async function calculateAverageTimeForFirstPR(
 
     const firstPRDates = Object.values(firstPRTimes);
     const least = Math.min(...firstPRDates);
-    const most= Math.max(...firstPRDates);
+    const most = Math.max(...firstPRDates);
     const averageFirstPRTime = least / most;
 
     return averageFirstPRTime;
@@ -65,27 +62,23 @@ async function calculateAverageTimeForFirstPR(
     throw error;
   }
 }
-export default  calculateAverageTimeForFirstPR;
+export default calculateAverageTimeForFirstPR;
 
 export async function getNpmRampUp(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
-  var owner:string="";
-  var name:string="";
+  let owner: string = "";
+  let name: string = "";
   try {
     const response = await npm_repo.getData();
     if (response) {
       const response_splitted = response.split("/");
       owner = response.split("/")[response_splitted.length - 2];
-      
-       name = response
-        .split("/")
-        [response_splitted.length - 1].split(".")[0];
-        
 
+      name = response.split("/")[response_splitted.length - 1].split(".")[0];
     }
   } catch (error) {
     console.error(`Error fetching package info for ${packageName}:`, error);
   }
-  var rampUP:number = await calculateAverageTimeForFirstPR(owner, name);
+  const rampUP: number = await calculateAverageTimeForFirstPR(owner, name);
   return rampUP;
 }

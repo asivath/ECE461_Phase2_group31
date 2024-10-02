@@ -1,9 +1,9 @@
 // import { resourceLimits } from 'worker_threads';
-import {NPM, GitHub } from '../api.js';
+import { NPM, GitHub } from "../api.js";
 
 async function fetchIssues(owner: string, repo: string): Promise<any> {
   const githubRepo = new GitHub(repo, owner);
-    const query = `
+  const query = `
       query($owner: String!, $repo: String!) {
         repository(owner: $owner, name: $repo) { 
           issues {
@@ -19,7 +19,7 @@ async function fetchIssues(owner: string, repo: string): Promise<any> {
       }
     `;
 
-    const result = await githubRepo.getData(query, null);
+  const result = await githubRepo.getData(query, null);
   return result;
 }
 
@@ -54,11 +54,11 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
     }
   }`;
 
-  const result = await githubRepo.getData(query,null);
+  const result = await githubRepo.getData(query, null);
 
   let totalLines = 0;
   function countLines(text: string) {
-    return text.split('\n').length;
+    return text.split("\n").length;
   }
 
   function traverseTree(entries: any) {
@@ -93,30 +93,26 @@ async function calculateCorrectness(owner: string, repo: string) {
   const normalizedBugRatio = totalLinesOfCode > 0 ? totalBugs / totalLinesOfCode : 0;
 
   // Adjust weights as needed
-  const correctness = (0.7 * resolvedIssuesRatio) + (0.3 * (1 - normalizedBugRatio));
+  const correctness = 0.7 * resolvedIssuesRatio + 0.3 * (1 - normalizedBugRatio);
 
   return correctness;
 }
 export async function getNpmCorrectness(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
-  var owner:string="";
-  var name:string="";
+  let owner: string = "";
+  let name: string = "";
   try {
     const response = await npm_repo.getData();
     if (response) {
       const response_splitted = response.split("/");
       owner = response.split("/")[response_splitted.length - 2];
-      
-       name = response
-        .split("/")
-        [response_splitted.length - 1].split(".")[0];
-        
 
+      name = response.split("/")[response_splitted.length - 1].split(".")[0];
     }
   } catch (error) {
     console.error(`Error fetching package info for ${packageName}:`, error);
   }
-  var correctness:number = await calculateCorrectness(owner, name);
+  const correctness: number = await calculateCorrectness(owner, name);
   return correctness;
 }
 

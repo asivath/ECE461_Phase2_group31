@@ -1,12 +1,12 @@
-import { spawn } from 'child_process';
-import * as fs from 'fs';
+import { spawn } from "child_process";
+import * as fs from "fs";
 
 export class TestCommand {
   public static run(): void {
     // console.log('Running tests...');
     this.runTests((testError) => {
       if (testError) {
-        console.error('Error running tests:', testError);
+        console.error("Error running tests:", testError);
         process.exit(0); // Exit with a non-zero status code to indicate failure
       } else {
         process.exit(0); // Exit with a zero status code to indicate success
@@ -15,15 +15,15 @@ export class TestCommand {
   }
 
   private static runTests(callback: (error: string | null) => void): void {
-    const testProcess = spawn('npx', ['jest', '--coverage', '--config', 'jest.config.cjs']);
+    const testProcess = spawn("npx", ["jest", "--coverage", "--config", "jest.config.cjs"]);
 
-    const stdoutStream = fs.createWriteStream('test-output.txt');
-    const stderrStream = fs.createWriteStream('test-error.txt');
+    const stdoutStream = fs.createWriteStream("test-output.txt");
+    const stderrStream = fs.createWriteStream("test-error.txt");
 
     testProcess.stdout.pipe(stdoutStream);
     testProcess.stderr.pipe(stderrStream);
 
-    testProcess.on('close', (code) => {
+    testProcess.on("close", (code) => {
       stdoutStream.close();
       stderrStream.close();
 
@@ -32,13 +32,13 @@ export class TestCommand {
       }
 
       // Read the test results from the file
-      fs.readFile('test-error.txt', 'utf8', (err, testData) => {
+      fs.readFile("test-error.txt", "utf8", (err, testData) => {
         if (err) {
           return callback(`Error reading test results: ${err.message}`);
         }
 
         // Read the coverage information from the file
-        fs.readFile('test-output.txt', 'utf8', (err, coverageData) => {
+        fs.readFile("test-output.txt", "utf8", (err, coverageData) => {
           if (err) {
             return callback(`Error reading coverage information: ${err.message}`);
           }
@@ -60,7 +60,7 @@ export class TestCommand {
             console.log(formattedOutput);
             callback(null);
           } else {
-            callback('Error parsing test results or coverage information');
+            callback("Error parsing test results or coverage information");
           }
         });
       });

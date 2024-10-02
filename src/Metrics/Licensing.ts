@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { simpleGit } from "simple-git";
-import { NPM } from '../api.js'; // Replace with the actual NPM library you are using
+import { NPM } from "../api.js"; // Replace with the actual NPM library you are using
 
 const git = simpleGit();
 
 const compatibilityTable: { [key: string]: number } = {
   "LGPL-2.1": 1,
-  "MIT": 1,
+  MIT: 1,
   "GPL-3.0": 0,
   "Apache-2.0": 1,
   "BSD-3-Clause": 1,
@@ -17,9 +17,9 @@ const compatibilityTable: { [key: string]: number } = {
   "EPL-1.0": 0,
   "EPL-2.0": 0,
   "CC0-1.0": 1,
-  "Unlicense": 1,
-  "ISC": 1,
-  "Zlib": 1,
+  Unlicense: 1,
+  ISC: 1,
+  Zlib: 1,
   "Artistic-2.0": 1,
   "OFL-1.1": 1,
   "EUPL-1.2": 0,
@@ -37,24 +37,24 @@ const compatibilityTable: { [key: string]: number } = {
   "CC-BY-NC-4.0": 0,
   "CC-BY-ND-4.0": 0,
   "CC-BY-NC-SA-4.0": 0,
-  "CC-BY-NC-ND-4.0": 0,
+  "CC-BY-NC-ND-4.0": 0
 };
 
 async function clearTmpDirectory(dir: string) {
   if (fs.existsSync(dir)) {
-      const files = fs.readdirSync(dir);
-      if (files.length > 0) {
-          fs.rmSync(dir, { recursive: true, force: true });
-          fs.mkdirSync(dir, { recursive: true });
-      }
-  } else {
+    const files = fs.readdirSync(dir);
+    if (files.length > 0) {
+      fs.rmSync(dir, { recursive: true, force: true });
       fs.mkdirSync(dir, { recursive: true });
+    }
+  } else {
+    fs.mkdirSync(dir, { recursive: true });
   }
 }
 
 async function cloneRepository(url: string, dir: string) {
   await clearTmpDirectory(dir);
-  await git.clone(url, dir, ['--depth', '1']);
+  await git.clone(url, dir, ["--depth", "1"]);
 }
 async function getLicense(dir: string): Promise<string | null> {
   const licenseFilePath = path.join(dir, "LICENSE");
@@ -79,10 +79,7 @@ function determineLicenseScore(licenseContent: string): number {
   return 0; // Default score if no matching license is found
 }
 
-async function checkLicenseCompatibility(
-  owner: string,
-  repo: string
-): Promise<number> {
+async function checkLicenseCompatibility(owner: string, repo: string): Promise<number> {
   const url = `https://github.com/${owner}/${repo}`;
 
   const dir = "/tmp/cloned-repo";
@@ -107,9 +104,7 @@ export async function checkLicenseCompatibilityNPM(packageName: string): Promise
     if (response) {
       const response_splitted = response.split("/");
       const owner: string = response.split("/")[response_splitted.length - 2];
-      const name: string = response
-        .split("/")
-        [response_splitted.length - 1].split(".")[0];
+      const name: string = response.split("/")[response_splitted.length - 1].split(".")[0];
       return await checkLicenseCompatibility(owner, name);
     }
   } catch (error) {

@@ -1,5 +1,5 @@
 export function timeWrapper<T>(fn: (...args: any[]) => Promise<T>) {
-  return async function(...args: any[]): Promise<{ result: T; time: number }> {
+  return async function (...args: any[]): Promise<{ result: T; time: number }> {
     const start = process.hrtime();
     try {
       const result = await fn(...args);

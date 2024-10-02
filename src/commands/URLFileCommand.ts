@@ -8,7 +8,6 @@ export class URLFileCommand {
 }
 
 async function processURLFile(file: string): Promise<void> {
-  // console.log(`URL file: ${file}`);
   fs.readFile(file, "utf8", async (err, data) => {
     if (err) {
       console.error(`Error reading ${file}:`, err);
@@ -19,7 +18,7 @@ async function processURLFile(file: string): Promise<void> {
       .split("\n")
       .map((url) => url.trim())
       .filter((url) => url !== "");
-    for (let url of urls) {
+    for (const url of urls) {
       try {
         if (url.includes("github.com")) {
           // console.log(`GitHub package: ${url}`);
@@ -28,7 +27,7 @@ async function processURLFile(file: string): Promise<void> {
           console.log(JSON.stringify(result) + "\n");
         } else if (url.includes("npmjs.com")) {
           // console.log(`npm package: ${url}`);
-          const packageName = url.split('package/')[1];
+          const packageName = url.split("package/")[1];
           const result = await calculateMetrics(packageName);
           console.log(JSON.stringify(result) + "\n");
         }
