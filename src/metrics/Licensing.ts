@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { simpleGit } from "simple-git";
 import { NPM } from "../api.js"; // Replace with the actual NPM library you are using
+import logger from "../logger.js";
 
 const git = simpleGit();
 
@@ -68,15 +69,13 @@ function determineLicenseScore(licenseContent: string): number {
   const lines = licenseContent.split("\n");
   if (lines.length > 1) {
     const licenseLine = lines[0].trim();
-    // console.log(`Detected license line: ${licenseLine}`);
     for (const [license, score] of Object.entries(compatibilityTable)) {
       if (licenseLine.includes(license)) {
-        // console.log(`Detected license type: ${license}`);
         return score;
       }
     }
   }
-  return 0; // Default score if no matching license is found
+  return 0;
 }
 
 async function checkLicenseCompatibility(owner: string, repo: string): Promise<number> {
@@ -88,15 +87,13 @@ async function checkLicenseCompatibility(owner: string, repo: string): Promise<n
   const licenseContent = await getLicense(dir);
 
   if (licenseContent) {
-    // console.log(`License:\n${licenseContent}`);
     return determineLicenseScore(licenseContent);
   } else {
-    // console.log('License file not found.');
     return 0;
   }
 }
 export { checkLicenseCompatibility, determineLicenseScore };
-export async function checkLicenseCompatibilityNPM(packageName: string): Promise<any> {
+export async function checkLicenseCompatibilityNPM(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
 
   try {
@@ -108,6 +105,7 @@ export async function checkLicenseCompatibilityNPM(packageName: string): Promise
       return await checkLicenseCompatibility(owner, name);
     }
   } catch (error) {
-    console.error(`Error fetching package info for ${packageName}:`, error);
+    logger.error(`Error fetching package info for ${packageName}:`, error);
   }
+  return 0;
 }

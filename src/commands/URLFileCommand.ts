@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { calculateMetrics } from "../Metrics/Netscore.js";
+import { calculateMetrics } from "../metrics/Netscore.js";
 
 export class URLFileCommand {
   public static async run(file: string): Promise<void> {

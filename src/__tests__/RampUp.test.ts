@@ -1,5 +1,5 @@
-import calculateAverageTimeForFirstPR from "../Metrics/RampUp.js";
-import { getNpmRampUp } from "../Metrics/RampUp.js";
+import calculateAverageTimeForFirstPR from "../metrics/RampUp.js";
+import { getNpmRampUp } from "../metrics/RampUp.js";
 import { describe, it, expect } from "vitest";
 
 describe("Ramp Up Module", () => {

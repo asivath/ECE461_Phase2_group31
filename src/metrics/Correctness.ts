@@ -1,7 +1,24 @@
 // import { resourceLimits } from 'worker_threads';
 import { NPM, GitHub } from "../api.js";
+import logger from "../logger.js";
 
-async function fetchIssues(owner: string, repo: string): Promise<any> {
+type IssuesData = {
+  data: {
+    repository: {
+      issues: {
+        totalCount: number;
+      };
+      closedIssues: {
+        totalCount: number;
+      };
+      bugIssues: {
+        totalCount: number;
+      };
+    };
+  };
+};
+
+async function fetchIssues(owner: string, repo: string): Promise<IssuesData> {
   const githubRepo = new GitHub(repo, owner);
   const query = `
       query($owner: String!, $repo: String!) {
@@ -19,12 +36,31 @@ async function fetchIssues(owner: string, repo: string): Promise<any> {
       }
     `;
 
-  const result = await githubRepo.getData(query, null);
-  return result;
+  const result = await githubRepo.getData(query);
+  return result as IssuesData;
 }
 
 async function calculateLOC(owner: string, repo: string): Promise<number> {
   const githubRepo = new GitHub(repo, owner);
+  type TreeEntry = {
+    name: string;
+    type: string;
+    object?: {
+      text?: string;
+      entries?: TreeEntry[];
+    };
+  };
+
+  type RepositoryData = {
+    data: {
+      repository: {
+        object?: {
+          entries?: TreeEntry[];
+        };
+      };
+    };
+  };
+
   const query = `{
     repository(owner: "${owner}", name: "${repo}") {
       object(expression: "HEAD:") {
@@ -54,16 +90,16 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
     }
   }`;
 
-  const result = await githubRepo.getData(query, null);
+  const result = (await githubRepo.getData(query)) as RepositoryData;
 
   let totalLines = 0;
   function countLines(text: string) {
     return text.split("\n").length;
   }
 
-  function traverseTree(entries: any) {
+  function traverseTree(entries: TreeEntry[]) {
     if (!entries) return;
-    entries.forEach((entry: any) => {
+    entries.forEach((entry: TreeEntry) => {
       if (entry.type === "blob" && entry.object && entry.object.text) {
         totalLines += countLines(entry.object.text);
       } else if (entry.type === "tree" && entry.object && entry.object.entries) {
@@ -75,7 +111,7 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
   if (result.data.repository.object && result.data.repository.object.entries) {
     traverseTree(result.data.repository.object.entries);
   } else {
-    console.error("No entries found in the repository object.");
+    logger.error("No entries found in the repository object.");
   }
 
   return totalLines;
@@ -110,13 +146,10 @@ export async function getNpmCorrectness(packageName: string): Promise<number> {
       name = response.split("/")[response_splitted.length - 1].split(".")[0];
     }
   } catch (error) {
-    console.error(`Error fetching package info for ${packageName}:`, error);
+    logger.error(`Error fetching package info for ${packageName}:`, error);
   }
   const correctness: number = await calculateCorrectness(owner, name);
   return correctness;
 }
 
 export default calculateCorrectness;
-// getNpmCorrectness("browserify").then((result) => {
-//   console.log(`Correctness: ${result}`);
-// });

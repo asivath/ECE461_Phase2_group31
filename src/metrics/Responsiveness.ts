@@ -1,4 +1,5 @@
 import { GitHub, NPM } from "../api.js";
+import logger from "../logger.js";
 
 const repo_query = `
   query($owner: String!, $name: String!) {
@@ -66,10 +67,10 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
   let number_of_issues: number = 0;
 
   try {
-    const repo_result: RepoQueryResponse = await git_repo.getData(repo_query, {
+    const repo_result = (await git_repo.getData(repo_query, {
       owner,
       name
-    });
+    })) as RepoQueryResponse;
 
     const repoSize: number = repo_result.data.repository.diskUsage / 1024;
 
@@ -81,11 +82,11 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
       number_of_issues = 80;
     }
 
-    const issue_result: IssueQueryResponse = await git_repo.getData(issues_query, {
+    const issue_result = (await git_repo.getData(issues_query, {
       owner,
       name,
       first: number_of_issues
-    });
+    })) as IssueQueryResponse;
 
     const issues: Issue[] = issue_result.data.repository.issues.edges;
 
@@ -107,12 +108,12 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
     const Responsiveness: number = 1 - averageResponseTime / number_of_issues;
     return Responsiveness;
   } catch (error) {
-    console.error("Error fetching data from GitHub API:", error);
+    logger.error("Error fetching data from GitHub API:", error);
     throw error;
   }
 }
 
-export async function getNpmResponsiveness(packageName: string): Promise<any> {
+export async function getNpmResponsiveness(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
 
   try {
@@ -124,6 +125,7 @@ export async function getNpmResponsiveness(packageName: string): Promise<any> {
       return await getIssueResponseTimes(owner, name);
     }
   } catch (error) {
-    console.error(`Error fetching package info for ${packageName}:`, error);
+    logger.error(`Error fetching package info for ${packageName}:`, error);
   }
+  return 0;
 }

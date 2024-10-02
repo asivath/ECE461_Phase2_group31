@@ -1,5 +1,5 @@
-import getCommitsByUser from "../Metrics/BusFactor.js";
-import { getNpmCommitsbyUser } from "../Metrics/BusFactor.js";
+import getCommitsByUser from "../metrics/BusFactor.js";
+import { getNpmCommitsbyUser } from "../metrics/BusFactor.js";
 import { describe, it, expect } from "vitest";
 
 describe("BusFactor Module", () => {

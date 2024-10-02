@@ -1,4 +1,5 @@
 import { NPM, GitHub } from "../api.js";
+import logger from "../logger.js";
 
 const query = `
   query($owner: String!, $name: String!, $after: String) {
@@ -21,24 +22,47 @@ const query = `
   }
 `;
 
+type PullRequestNode = {
+  node: {
+    createdAt: string;
+    author: {
+      login: string;
+    };
+  };
+};
+
+type PageInfo = {
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
+type PullRequestsData = {
+  repository: {
+    pullRequests: {
+      edges: PullRequestNode[];
+      pageInfo: PageInfo;
+    };
+  };
+};
+
 async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(owner, name);
 
   let hasNextPage = true;
-  let endCursor = null;
+  let endCursor: string | null = null;
   const firstPRTimes: { [key: string]: number } = {};
 
   try {
     while (hasNextPage) {
-      const data = await git_repo.getData(query, {
+      const data = (await git_repo.getData(query, {
         owner,
         name,
         after: endCursor
-      });
+      })) as { data: PullRequestsData };
 
       const pullRequests = data.data.repository.pullRequests.edges;
 
-      pullRequests.forEach((pr: any) => {
+      pullRequests.forEach((pr: PullRequestNode) => {
         const author = pr.node.author;
         const createdAt = new Date(pr.node.createdAt).getTime();
 
@@ -58,7 +82,7 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
 
     return averageFirstPRTime;
   } catch (error) {
-    console.error("Error fetching pull requests:", error);
+    logger.error("Error fetching pull requests:", error);
     throw error;
   }
 }
@@ -77,7 +101,7 @@ export async function getNpmRampUp(packageName: string): Promise<number> {
       name = response.split("/")[response_splitted.length - 1].split(".")[0];
     }
   } catch (error) {
-    console.error(`Error fetching package info for ${packageName}:`, error);
+    logger.error(`Error fetching package info for ${packageName}:`, error);
   }
   const rampUP: number = await calculateAverageTimeForFirstPR(owner, name);
   return rampUP;

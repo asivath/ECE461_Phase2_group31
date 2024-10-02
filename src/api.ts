@@ -8,7 +8,7 @@ abstract class API {
   constructor(name: string) {
     this.package_name = name;
   }
-  public abstract getData(request_string?: string, args?: any): Promise<any>;
+  public abstract getData(request_string?: string, args?: Record<string, unknown>): Promise<unknown>;
 }
 
 export class GitHub extends API {
@@ -18,7 +18,7 @@ export class GitHub extends API {
     this.owner_name = own_name;
   }
 
-  public async getData(request_string: string, args?: any): Promise<any> {
+  public async getData(request_string: string, args?: Record<string, unknown>): Promise<unknown> {
     const url = "https://api.github.com/graphql";
     const headers = {
       Authorization: `Bearer ${env.GITHUB_TOKEN}`
@@ -46,7 +46,7 @@ export class NPM extends API {
     super(p_name);
   }
 
-  public async getData(): Promise<any> {
+  public async getData(): Promise<string> {
     const url = `https://registry.npmjs.org/${this.package_name}`;
     try {
       const response = await fetch(url);

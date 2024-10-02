@@ -1,6 +1,6 @@
-import calculateLOC from "../Metrics/Correctness.js";
-import calculateCorrectness from "../Metrics/Correctness.js";
-import { getNpmCorrectness } from "../Metrics/Correctness.js";
+import calculateLOC from "../metrics/Correctness.js";
+import calculateCorrectness from "../metrics/Correctness.js";
+import { getNpmCorrectness } from "../metrics/Correctness.js";
 import { describe, it, expect } from "vitest";
 
 describe("Correctness Module", () => {

@@ -1,14 +1,14 @@
 import { timeWrapper } from "../timeWrapper.js";
-import calculateCorrectness from "../Metrics/Correctness.js";
-import { checkLicenseCompatibility } from "../Metrics/Licensing.js";
-import calculateAverageTimeForFirstPR from "../Metrics/RampUp.js";
-import { getIssueResponseTimes } from "../Metrics/Responsiveness.js";
-import getCommitsByUser from "../Metrics/BusFactor.js";
-import { getNpmCommitsbyUser } from "../Metrics/BusFactor.js";
-import { getNpmCorrectness } from "../Metrics/Correctness.js";
-import { checkLicenseCompatibilityNPM } from "../Metrics/Licensing.js";
-import { getNpmRampUp } from "../Metrics/RampUp.js";
-import { getNpmResponsiveness } from "../Metrics/Responsiveness.js";
+import calculateCorrectness from "./Correctness.js";
+import { checkLicenseCompatibility } from "./Licensing.js";
+import calculateAverageTimeForFirstPR from "./RampUp.js";
+import { getIssueResponseTimes } from "./Responsiveness.js";
+import getCommitsByUser from "./BusFactor.js";
+import { getNpmCommitsbyUser } from "./BusFactor.js";
+import { getNpmCorrectness } from "./Correctness.js";
+import { checkLicenseCompatibilityNPM } from "./Licensing.js";
+import { getNpmRampUp } from "./RampUp.js";
+import { getNpmResponsiveness } from "./Responsiveness.js";
 
 // Wrap functions with timeWrapper
 const wrappedCalculateCorrectness = timeWrapper(calculateCorrectness);

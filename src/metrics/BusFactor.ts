@@ -1,4 +1,5 @@
 import { GitHub, NPM } from "../api.js";
+import logger from "../logger.js";
 const query = `
   query($owner: String!, $name: String!, $after: String) {
     repository(owner: $owner, name: $name) {
@@ -37,15 +38,49 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
 
   try {
     while (hasNextPage) {
-      const data = await git_repo.getData(query, {
+      const data = (await git_repo.getData(query, {
         owner,
         name,
         after: endCursor
-      });
+      })) as {
+        data: {
+          repository: {
+            defaultBranchRef: {
+              target: {
+                history: {
+                  edges: Array<{
+                    node: {
+                      author: {
+                        user: {
+                          login: string;
+                        } | null;
+                      };
+                    };
+                  }>;
+                  pageInfo: {
+                    hasNextPage: boolean;
+                    endCursor: string;
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
 
       const commits = data.data.repository.defaultBranchRef.target.history.edges;
 
-      commits.forEach((commit: any) => {
+      type Commit = {
+        node: {
+          author: {
+            user: {
+              login: string;
+            } | null;
+          };
+        };
+      };
+
+      commits.forEach((commit: Commit) => {
         const author = commit.node.author.user?.login;
         if (author) {
           if (!userCommits[author]) {
@@ -64,15 +99,10 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
       commitnumbers.push(commits[1]);
     });
     commitnumbers.sort((a, b) => b - a);
-    // console.log("Sorted commit numbers:");
-    // commitnumbers.forEach((commits, index) => {
-    //   // console.log(`Commit ${index + 1}: ${commits}`);
-    // });
     let sum: number = 0;
     commitnumbers.forEach((commits) => {
       sum = sum + commits;
     });
-    // console.log("Total commits:", sum);
     let currentsum: number = 0;
     for (const commits of commitnumbers) {
       currentsum += commits;
@@ -83,9 +113,8 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
     }
 
     busfactor /= commitnumbers.length;
-    // console.log("Bus factor:", busfactor);
   } catch (error) {
-    console.error("Error fetching data from GitHub API:", error);
+    logger.error("Error fetching data from GitHub API:", error);
   }
 
   return busfactor;
@@ -104,7 +133,7 @@ export async function getNpmCommitsbyUser(packageName: string): Promise<number> 
       name = response.split("/")[response_splitted.length - 1].split(".")[0];
     }
   } catch (error) {
-    console.error(`Error fetching package info for ${packageName}:`, error);
+    logger.error(`Error fetching package info for ${packageName}:`, error);
   }
   const busFactor: number = await getCommitsByUser(owner, name);
   return busFactor;

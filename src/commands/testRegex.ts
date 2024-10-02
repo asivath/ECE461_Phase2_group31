@@ -1,5 +1,4 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
 
 // Read the content of the out.txt file
 const filePath = "src/commands/out.txt";

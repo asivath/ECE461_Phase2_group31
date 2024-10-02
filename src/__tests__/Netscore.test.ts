@@ -1,4 +1,4 @@
-import { calculateMetrics } from "../Metrics/Netscore.js";
+import { calculateMetrics } from "../metrics/Netscore.js";
 import { describe, it, beforeAll, expect } from "vitest";
 
 describe("Netscore Module", () => {

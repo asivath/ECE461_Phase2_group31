@@ -1,4 +1,4 @@
-import { getIssueResponseTimes, getNpmResponsiveness } from "../Metrics/Responsiveness.js";
+import { getIssueResponseTimes, getNpmResponsiveness } from "../metrics/Responsiveness.js";
 import { describe, it, expect } from "vitest";
 
 describe("Responsiveness Metrics", () => {

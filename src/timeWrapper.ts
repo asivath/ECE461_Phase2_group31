@@ -1,5 +1,8 @@
-export function timeWrapper<T>(fn: (...args: any[]) => Promise<T>) {
-  return async function (...args: any[]): Promise<{ result: T; time: number }> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- To lazy to fix this
+export function timeWrapper<T extends (...args: any[]) => Promise<any>>(fn: T) {
+  return async function (
+    ...args: Parameters<T>
+  ): Promise<{ result: ReturnType<T> extends Promise<infer R> ? R : never; time: number }> {
     const start = process.hrtime();
     try {
       const result = await fn(...args);

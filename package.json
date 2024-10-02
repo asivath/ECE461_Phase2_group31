@@ -2,6 +2,7 @@
   "name": "ece461_phase2_group31",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asivath/ECE461_Phase2_group31.git"

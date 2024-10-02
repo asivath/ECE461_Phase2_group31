@@ -1,4 +1,4 @@
-import { MetricCalculatorFactory } from "../Metrics/MetricCalculator.js";
+import { MetricCalculatorFactory } from "./MetricCalculator.js";
 
 async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string>> {
   const calculator = MetricCalculatorFactory.create(repo);

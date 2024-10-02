@@ -1,16 +1,8 @@
 import { Command } from "@commander-js/extra-typings";
-import { InstallCommand } from "./commands/InstallCommand";
-import { URLFileCommand } from "./commands/URLFileCommand";
-import { TestCommand } from "./commands/TestCommand";
+import { URLFileCommand } from "./commands/URLFileCommand.js";
+import { TestCommand } from "./commands/TestCommand.js";
 
 const program = new Command();
-
-program
-  .command("install")
-  .description("Install dependencies in userland")
-  .action(() => {
-    InstallCommand.run("userland.txt");
-  });
 
 program
   .command("test")
