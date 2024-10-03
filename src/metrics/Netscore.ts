@@ -1,6 +1,6 @@
 import { MetricCalculatorFactory } from "./MetricCalculator.js";
 
-async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string>> {
+async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string | number>> {
   const calculator = MetricCalculatorFactory.create(repo);
   const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor] = await Promise.all([
     calculator.calculateCorrectness(ownerOrPackage, repo),
@@ -19,22 +19,22 @@ async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<
 
   const url = calculator.getUrl(ownerOrPackage, repo);
 
-  const ndjsonOutput: Record<string, string> = {
+  const ndjsonOutput: Record<string, number | string> = {
     URL: url,
-    NetScore: String(netscore),
-    NetScore_Latency: String(
-      correctness.time + licenseCompatibility.time + rampUp.time + responsiveness.time + busFactor.time
+    NetScore: parseFloat(netscore.toFixed(2)),
+    NetScore_Latency: parseFloat(
+      (correctness.time + licenseCompatibility.time + rampUp.time + responsiveness.time + busFactor.time).toFixed(2)
     ),
-    RampUp: String(rampUp.result),
-    RampUp_Latency: String(rampUp.time),
-    Correctness: String(correctness.result),
-    Correctness_Latency: String(correctness.time),
-    BusFactor: String(busFactor.result),
-    BusFactor_Latency: String(busFactor.time),
-    ResponsiveMaintainer: String(responsiveness.result),
-    ResponsiveMaintainer_Latency: String(responsiveness.time),
-    License: String(licenseCompatibility.result),
-    License_Latency: String(licenseCompatibility.time)
+    RampUp: parseFloat(rampUp.result.toFixed(2)),
+    RampUp_Latency: parseFloat(rampUp.time.toFixed(2)),
+    Correctness: parseFloat(correctness.result.toFixed(2)),
+    Correctness_Latency: parseFloat(correctness.time.toFixed(2)),
+    BusFactor: parseFloat(busFactor.result.toFixed(2)),
+    BusFactor_Latency: parseFloat(busFactor.time.toFixed(2)),
+    ResponsiveMaintainer: parseFloat(responsiveness.result.toFixed(2)),
+    ResponsiveMaintainer_Latency: parseFloat(responsiveness.time.toFixed(2)),
+    License: parseFloat(licenseCompatibility.result.toFixed(2)),
+    License_Latency: parseFloat(licenseCompatibility.time.toFixed(2))
   };
 
   return ndjsonOutput;
