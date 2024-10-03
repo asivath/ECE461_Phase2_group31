@@ -1,16 +1,31 @@
 {
   "name": "ece461_phase2_group31",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "description": "ECE 461 Project Phase 2",
+  "homepage": "https://github.com/asivath/ECE461_Phase2_group31#readme",
+  "bugs": {
+    "url": "https://github.com/asivath/ECE461_Phase2_group31/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asivath/ECE461_Phase2_group31.git"
   },
-  "author": "Aditya Sivathanu, Kevin Chang, Ellis Selznick",
   "license": "MIT",
+  "author": "Aditya Sivathanu, Kevin Chang, Ellis Selznick",
+  "type": "module",
+  "main": "index.js",
   "bin": {
     "cli": "./dist/install.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write '**/*.{ts,mjs,json}'",
+    "lint": "eslint '**/*.{ts,mjs,json}' --fix",
+    "quality": "npm run format && npm run lint",
+    "test": "vitest run",
+    "test:cicd": "vitest run --coverage --no-color",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@octokit/app": "^15.1.0",
@@ -32,7 +47,6 @@
   },
   "devDependencies": {
     "@commander-js/extra-typings": "^12.1.0",
-    "typescript": "^5.5.4",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.9.1",
     "@octokit/types": "^13.5.0",
@@ -45,21 +59,7 @@
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
     "typescript-eslint": "^8.8.0"
-  },
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:cicd": "vitest run --coverage --no-color",
-    "lint": "eslint '**/*.{ts,mjs,json}' --fix",
-    "format": "prettier --write '**/*.{ts,mjs,json}'",
-    "quality": "npm run format && npm run lint",
-    "build": "tsc"
-  },
-  "description": "ECE 461 Project Phase 2",
-  "bugs": {
-    "url": "https://github.com/asivath/ECE461_Phase2_group31/issues"
-  },
-  "homepage": "https://github.com/asivath/ECE461_Phase2_group31#readme"
+  }
 }
