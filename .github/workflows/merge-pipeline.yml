@@ -22,6 +22,10 @@ jobs:
             echo "🚨 node_modules folder detected. Please remove it." > disallowed_files.txt
             echo "disallowed_files_present=true" >> $GITHUB_OUTPUT
           fi
+          if git diff --name-only origin/main...HEAD | grep -E *.txt; then
+            echo "🚨 txt files detected. Please remove them." > disallowed_files.txt
+            echo "disallowed_files_present=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Comment PR on disallowed files failure
         if: steps.check_files.outputs.disallowed_files_present == 'true'
@@ -80,7 +84,7 @@ jobs:
         if: steps.lint_and_prettify.outputs.eslint_failed == 'true' || steps.lint_and_prettify.outputs.prettify_failed == 'true'
         run: exit 1
 
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,6 +94,33 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+      
+      - name: Build the project
+        id: build
+        run: |
+          set -o pipefail
+          if ! npm run build 2>&1 | tee build.log; then
+            echo "build_failed=true" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Report Build Errors
+        if: steps.build.outputs.build_failed == 'true'
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+            const buildLog = fs.readFileSync('build.log', 'utf8');
+            const prNumber = context.payload.pull_request?.number;
+            if (prNumber) {
+              const message = `🚨 The build has failed. Please check the build logs for more information.\n\n\`\`\`\n${buildLog}\n\`\`\``;
+              github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: prNumber,
+                body: message,
+              });
+            }
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Tests
         id: run_tests

@@ -1,5 +1,7 @@
 import { NPM, GitHub } from "../api.js";
-import logger from "../logger.js";
+import { getLogger } from "../logger.js";
+
+const logger = getLogger();
 
 const query = `
   query($owner: String!, $name: String!, $after: String) {
@@ -45,7 +47,7 @@ type PullRequestsData = {
   };
 };
 
-async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
+export default async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(owner, name);
 
   let hasNextPage = true;
@@ -80,19 +82,20 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
 
     const firstPRDates = Object.values(firstPRTimes);
     if (firstPRDates.length === 0) {
+      logger.info("No pull requests found for ${owner}/${name}");
       return 0.5;
     }
     const least = Math.min(...firstPRDates);
     const most = Math.max(...firstPRDates);
     const averageFirstPRTime = least / most;
 
+    logger.info(`Average time for first PR: ${averageFirstPRTime}`);
     return averageFirstPRTime;
   } catch (error) {
     logger.error("Error fetching pull requests:", error);
     throw error;
   }
 }
-export default calculateAverageTimeForFirstPR;
 
 export async function getNpmRampUp(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
@@ -108,6 +111,7 @@ export async function getNpmRampUp(packageName: string): Promise<number> {
         owner = pathnameParts[0];
         name = pathnameParts[1];
       } else {
+        logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
     }
