@@ -1,5 +1,7 @@
 import { GitHub, NPM } from "../api.js";
-import logger from "../logger.js";
+import { getLogger } from "../logger.js";
+
+const logger = getLogger();
 
 const repo_query = `
   query($owner: String!, $name: String!) {
@@ -91,6 +93,7 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
     const issues: Issue[] = issue_result.data.repository.issues.edges;
 
     if (issues.length === 0) {
+      logger.info("No issues found");
       return 0.5;
     }
 
@@ -110,6 +113,7 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
     const averageResponseTime: number = totalResponseTime / responseTimes.length;
 
     const Responsiveness: number = 1 - averageResponseTime / number_of_issues;
+    logger.info(`Responsiveness for ${owner}/${name}: ${Responsiveness}`);
     return Responsiveness;
   } catch (error) {
     logger.error("Error fetching data from GitHub API:", error);
@@ -131,6 +135,7 @@ export async function getNpmResponsiveness(packageName: string): Promise<number>
         owner = pathnameParts[0];
         name = pathnameParts[1];
       } else {
+        logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
       return await getIssueResponseTimes(owner, name);

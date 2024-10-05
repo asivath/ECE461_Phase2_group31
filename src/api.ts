@@ -1,7 +1,8 @@
 import axios from "axios";
-import * as dotenv from "dotenv";
-dotenv.config();
-const env: NodeJS.ProcessEnv = process.env;
+import "dotenv/config";
+import { getLogger } from "./logger.js";
+
+const logger = getLogger();
 
 abstract class API {
   protected package_name: string;
@@ -21,7 +22,7 @@ export class GitHub extends API {
   public async getData(request_string: string, args?: Record<string, unknown>): Promise<unknown> {
     const url = "https://api.github.com/graphql";
     const headers = {
-      Authorization: `Bearer ${env.GITHUB_TOKEN}`
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
     };
     const data = {
       query: request_string,
@@ -35,7 +36,7 @@ export class GitHub extends API {
       const response = await axios.post(url, data, { headers });
       return response.data;
     } catch (error) {
-      console.error("Error fetching package info:", error);
+      logger.error("Error fetching package info:", error);
       throw error;
     }
   }
@@ -60,10 +61,11 @@ export class NPM extends API {
       if (gitHubAPI) {
         return gitHubAPI;
       } else {
+        logger.error("No GitHub repository found");
         throw new Error("No GitHub repository found");
       }
     } catch (error) {
-      console.error("Error fetching package info:", error);
+      logger.error("Error fetching package info:", error);
       throw error;
     }
   }

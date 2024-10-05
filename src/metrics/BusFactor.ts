@@ -1,5 +1,7 @@
 import { GitHub, NPM } from "../api.js";
-import logger from "../logger.js";
+import { getLogger } from "../logger.js";
+
+const logger = getLogger();
 const query = `
   query($owner: String!, $name: String!, $after: String) {
     repository(owner: $owner, name: $name) {
@@ -28,7 +30,7 @@ const query = `
   }
 `;
 
-async function getCommitsByUser(owner: string, name: string): Promise<number> {
+export default async function getCommitsByUser(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub("graphql.js", "octokit");
 
   let hasNextPage = true;
@@ -119,10 +121,10 @@ async function getCommitsByUser(owner: string, name: string): Promise<number> {
   } catch (error) {
     logger.error("Error fetching data from GitHub API:", error);
   }
-
+  logger.info(`Bus factor for ${owner}/${name}: ${busfactor}`);
   return busfactor;
 }
-export default getCommitsByUser;
+
 export async function getNpmCommitsbyUser(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
@@ -137,6 +139,7 @@ export async function getNpmCommitsbyUser(packageName: string): Promise<number> 
         owner = pathnameParts[0];
         name = pathnameParts[1];
       } else {
+        logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
     }

@@ -1,47 +1,70 @@
-import { createLogger, format, transports, Logger as WinstonLogger } from "winston";
+/**
+ * This module provides a Winston logger instance that can be used throughout the application.
+ */
+import winston, { Logger } from "winston";
+import "dotenv/config";
 
-// Define custom log levels
-const customLevels = {
-  levels: {
-    startup: 0,
-    error: 1,
-    warn: 2,
-    dataChange: 3,
-    request: 4,
-    stateChange: 5,
-    userInteraction: 6,
-    risk: 7,
-    wait: 8,
-    progress: 9,
-    branch: 10,
-    summary: 11,
-    info: 12,
-    debug: 13
-  }
-};
+let bareLogger: Logger | null = null;
 
-type CustomLogger = {
-  startup: (message: string) => void;
-  dataChange: (message: string) => void;
-  request: (message: string) => void;
-  stateChange: (message: string) => void;
-  userInteraction: (message: string) => void;
-  risk: (message: string) => void;
-  wait: (message: string) => void;
-  progress: (message: string) => void;
-  branch: (message: string) => void;
-  summary: (message: string) => void;
-} & WinstonLogger;
+/**
+ * Initialize the logger instance.
+ */
+const initializeLogger = () => {
+  const logLevel = (() => {
+    const level = process.env.LOG_LEVEL;
+    switch (level) {
+      case "0":
+        return "silent";
+      case "1":
+        return "info";
+      case "2":
+        return "debug";
+      default:
+        return "error";
+    }
+  })();
 
-const logger: CustomLogger = createLogger({
-  levels: customLevels.levels,
-  format: format.combine(
-    format.timestamp(),
-    format.printf(({ timestamp, level, message }) => {
+  const fileLogFormat = winston.format.combine(
+    winston.format.timestamp({ format: "DD/MM/YYYY HH:mm:ss" }),
+    winston.format.printf(({ timestamp, level, message }) => {
+      if (typeof message === "object") {
+        message = JSON.stringify(message, null, 2);
+      }
       return `${timestamp} [${level}]: ${message}`;
     })
-  ),
-  transports: [new transports.Console(), new transports.File({ filename: "application.log" })]
-}) as CustomLogger;
+  );
 
-export default logger;
+  const logDir = process.env.LOG_FILE || "app.log";
+
+  bareLogger = winston.createLogger({
+    level: logLevel,
+    format: fileLogFormat,
+    transports: [new winston.transports.File({ filename: logDir })],
+    silent: logLevel === "silent"
+  });
+};
+
+/**
+ * Get the logger instance.
+ * @returns The logger instance.
+ */
+export const getLogger = () => {
+  if (!bareLogger) {
+    initializeLogger();
+    if (!bareLogger) {
+      throw new Error("Unable to initialize logger");
+    }
+  }
+  return bareLogger;
+};
+
+/**
+ * Reinitialize the logger instance.
+ */
+export const reinitializeLogger = () => {
+  bareLogger = null;
+  initializeLogger();
+  if (!bareLogger) {
+    throw new Error("Unable to reinitialize logger");
+  }
+};

@@ -1,9 +1,10 @@
 import fs from "fs/promises";
 import path from "path";
 import { simpleGit } from "simple-git";
-import { NPM } from "../api.js"; // Replace with the actual NPM library you are using
-import logger from "../logger.js";
+import { NPM } from "../api.js";
+import { getLogger } from "../logger.js";
 
+const logger = getLogger();
 const git = simpleGit();
 
 const compatibilityTable: { [key: string]: number } = {
@@ -47,7 +48,7 @@ async function clearTmpDirectory(dir: string): Promise<void> {
     await fs.mkdir(dir, { recursive: true });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.error(`Error clearing tmp directory ${dir}:`, error);
+      logger.error(`Error clearing tmp directory ${dir}:`, error);
     }
   }
 }
@@ -64,18 +65,19 @@ async function getLicense(dir: string): Promise<string | null> {
     return licenseContent;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-      console.error(`Error clearing tmp directory ${dir}:`, error);
+      logger.error(`Error clearing tmp directory ${dir}:`, error);
     }
     return null;
   }
 }
 
-function determineLicenseScore(licenseContent: string): number {
+export function determineLicenseScore(licenseContent: string): number {
   const lines = licenseContent.split("\n");
   if (lines.length > 1) {
     const licenseLine = lines[0].trim();
     for (const [license, score] of Object.entries(compatibilityTable)) {
       if (licenseLine.includes(license)) {
+        logger.info(`Found license ${license} with score ${score}`);
         return score;
       }
     }
@@ -83,7 +85,7 @@ function determineLicenseScore(licenseContent: string): number {
   return 0;
 }
 
-async function checkLicenseCompatibility(owner: string, repo: string): Promise<number> {
+export async function checkLicenseCompatibility(owner: string, repo: string): Promise<number> {
   const url = `https://github.com/${owner}/${repo}`;
 
   const dir = "/tmp/cloned-repo";
@@ -97,7 +99,7 @@ async function checkLicenseCompatibility(owner: string, repo: string): Promise<n
     return 0;
   }
 }
-export { checkLicenseCompatibility, determineLicenseScore };
+
 export async function checkLicenseCompatibilityNPM(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
@@ -112,6 +114,7 @@ export async function checkLicenseCompatibilityNPM(packageName: string): Promise
         owner = pathnameParts[0];
         name = pathnameParts[1];
       } else {
+        logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
       return await checkLicenseCompatibility(owner, name);

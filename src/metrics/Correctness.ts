@@ -1,6 +1,7 @@
-// import { resourceLimits } from 'worker_threads';
 import { NPM, GitHub } from "../api.js";
-import logger from "../logger.js";
+import { getLogger } from "../logger.js";
+
+const logger = getLogger();
 
 type IssuesData = {
   data: {
@@ -19,25 +20,33 @@ type IssuesData = {
 };
 
 async function fetchIssues(owner: string, repo: string): Promise<IssuesData> {
-  const githubRepo = new GitHub(repo, owner);
-  const query = `
-      query($owner: String!, $repo: String!) {
-        repository(owner: $owner, name: $repo) { 
-          issues {
-            totalCount
-          }
-          closedIssues: issues(states: CLOSED) {
-            totalCount
-          }
-          bugIssues: issues(first: 5, labels: ["type: bug"]) {
-            totalCount
+  try {
+    const githubRepo = new GitHub(repo, owner);
+    const query = `
+        query($owner: String!, $repo: String!) {
+          repository(owner: $owner, name: $repo) { 
+            issues {
+              totalCount
+            }
+            closedIssues: issues(states: CLOSED) {
+              totalCount
+            }
+            bugIssues: issues(first: 5, labels: ["type: bug"]) {
+              totalCount
+            }
           }
         }
-      }
-    `;
+      `;
 
-  const result = await githubRepo.getData(query);
-  return result as IssuesData;
+    const result = await githubRepo.getData(query);
+    logger.info(`Fetched issues for ${owner}/${repo}:`, result);
+    return result as IssuesData;
+  } catch (error) {
+    logger.error(`Error fetching issues for ${owner}/${repo}:`, error);
+    return {
+      data: { repository: { issues: { totalCount: 0 }, closedIssues: { totalCount: 0 }, bugIssues: { totalCount: 0 } } }
+    };
+  }
 }
 
 async function calculateLOC(owner: string, repo: string): Promise<number> {
@@ -115,6 +124,7 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
       logger.error("No entries found in the repository object.");
     }
 
+    logger.info(`Calculated LOC for ${owner}/${repo}:`, totalLines);
     return totalLines;
   } catch (error) {
     logger.error(`Error calculating LOC for ${owner}/${repo}:`, error);
@@ -135,7 +145,7 @@ async function calculateCorrectness(owner: string, repo: string) {
 
   // Adjust weights as needed
   const correctness = 0.7 * resolvedIssuesRatio + 0.3 * (1 - normalizedBugRatio);
-
+  logger.info(`Correctness for ${owner}/${repo}:`, correctness);
   return correctness;
 }
 export async function getNpmCorrectness(packageName: string): Promise<number> {
@@ -152,6 +162,7 @@ export async function getNpmCorrectness(packageName: string): Promise<number> {
         owner = pathnameParts[0];
         name = pathnameParts[1];
       } else {
+        logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
     }
@@ -159,6 +170,7 @@ export async function getNpmCorrectness(packageName: string): Promise<number> {
     logger.error(`Error fetching package info for ${packageName}:`, error);
   }
   const correctness: number = await calculateCorrectness(owner, name);
+  logger.info(`Correctness for ${packageName}:`, correctness);
   return correctness;
 }
 

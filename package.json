@@ -18,6 +18,7 @@
     "cli": "./dist/install.js"
   },
   "scripts": {
+    "start": "npm run build && node ./src/dist/index.js",
     "build": "tsc",
     "format": "prettier --write '**/*.{ts,mjs,json}'",
     "lint": "eslint '**/*.{ts,mjs,json}' --fix",
