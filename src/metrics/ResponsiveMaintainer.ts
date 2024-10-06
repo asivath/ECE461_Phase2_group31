@@ -62,7 +62,13 @@ type IssueQueryResponse = {
   };
 };
 
-export async function getIssueResponseTimes(owner: string, name: string): Promise<number> {
+/**
+ * Fetches the responsiveness score for a repository on GitHub
+ * @param owner The owner of the repository
+ * @param name The name of the repository
+ * @returns The responsiveness score for the repository
+ */
+async function calculateResponsiveness(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(name, owner);
 
   const responseTimes: number[] = [];
@@ -121,7 +127,12 @@ export async function getIssueResponseTimes(owner: string, name: string): Promis
   }
 }
 
-export async function getNpmResponsiveness(packageName: string): Promise<number> {
+/**
+ * Fetches the responsiveness score for a package on NPM
+ * @param packageName The name of the package
+ * @returns The responsiveness score for the package
+ */
+async function getResponsiveMaintainerScoreNPM(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
   let name: string = "";
@@ -138,10 +149,27 @@ export async function getNpmResponsiveness(packageName: string): Promise<number>
         logger.error(`Invalid package URL: ${response}`);
         throw new Error(`Invalid package URL: ${response}`);
       }
-      return await getIssueResponseTimes(owner, name);
+      return await calculateResponsiveness(owner, name);
     }
   } catch (error) {
     logger.error(`Error fetching package info for ${packageName}:`, error);
   }
   return 0;
+}
+
+/**
+ * Fetches the responsiveness score for a repository or package
+ * @param ownerOrPackageName The owner of the repository or the name of the package
+ * @param name The name of the repository
+ * @returns The responsiveness score for the repository or package
+ */
+export default async function calculateResponsiveMaintainerScore(
+  ownerOrPackageName: string,
+  name?: string
+): Promise<number> {
+  if (name) {
+    return calculateResponsiveness(ownerOrPackageName, name);
+  } else {
+    return getResponsiveMaintainerScoreNPM(ownerOrPackageName);
+  }
 }

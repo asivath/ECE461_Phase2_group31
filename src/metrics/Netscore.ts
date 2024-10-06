@@ -1,13 +1,50 @@
-import { MetricCalculatorFactory } from "./MetricCalculator.js";
+import { getLogger } from "../logger.js";
+import getBusFactorScore from "./BusFactor.js";
+import getCorrectnessScore from "./Correctness.js";
+import getLicenseScore from "./License.js";
+import getRampUpScore from "./RampUp.js";
+import getResposiveMaintainerScore from "./ResponsiveMaintainer.js";
 
-async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string | number>> {
-  const calculator = MetricCalculatorFactory.create(repo);
+const logger = getLogger();
+
+/**
+ * Calculate the score of a function and return the score and latency
+ * @param calculateFn The function to calculate the score
+ * @returns The score and latency
+ */
+async function latencyWrapper(calculateFn: () => Promise<number>): Promise<{ result: number; time: number }> {
+  const startTime = Date.now();
+  try {
+    const result = await calculateFn();
+    const endTime = Date.now();
+    const time = (endTime - startTime) / 1000;
+    return { result, time };
+  } catch (error) {
+    logger.info(`Error calculating score: ${error}`);
+    const endTime = Date.now();
+    const time = (endTime - startTime) / 1000;
+    return { result: 0, time: time };
+  }
+}
+
+/**
+ * Calculate the metrics for a package or repository
+ * @param ownerOrPackage The owner of the repository or the name of the package
+ * @param originalURL The original URL of the package
+ * @param repo The name of the repository (if applicable)
+ * @returns The metrics for the package or repository
+ */
+export default async function calculateMetrics(
+  ownerOrPackage: string,
+  originalURL: string,
+  repo?: string
+): Promise<Record<string, string | number>> {
   const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor] = await Promise.all([
-    calculator.calculateCorrectness(ownerOrPackage, repo),
-    calculator.calculateLicenseCompatibility(ownerOrPackage, repo),
-    calculator.calculateRampUp(ownerOrPackage, repo),
-    calculator.calculateResponsiveness(ownerOrPackage, repo),
-    calculator.calculateBusFactor(ownerOrPackage, repo)
+    latencyWrapper(() => getCorrectnessScore(ownerOrPackage, repo)),
+    latencyWrapper(() => getLicenseScore(ownerOrPackage, repo)),
+    latencyWrapper(() => getRampUpScore(ownerOrPackage, repo)),
+    latencyWrapper(() => getResposiveMaintainerScore(ownerOrPackage, repo)),
+    latencyWrapper(() => getBusFactorScore(ownerOrPackage, repo))
   ]);
 
   const netscore =
@@ -17,10 +54,8 @@ async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<
     0.2 * responsiveness.result +
     0.26 * licenseCompatibility.result;
 
-  const url = calculator.getUrl(ownerOrPackage, repo);
-
   const ndjsonOutput: Record<string, number | string> = {
-    URL: url,
+    URL: originalURL,
     NetScore: parseFloat(netscore.toFixed(2)),
     NetScore_Latency: parseFloat(
       (correctness.time + licenseCompatibility.time + rampUp.time + responsiveness.time + busFactor.time).toFixed(2)
@@ -39,5 +74,3 @@ async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<
 
   return ndjsonOutput;
 }
-
-export { calculateMetrics };

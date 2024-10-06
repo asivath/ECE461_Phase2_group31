@@ -47,7 +47,13 @@ type PullRequestsData = {
   };
 };
 
-export default async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
+/**
+ * Fetches the average time for the first pull request for a repository
+ * @param owner The owner of the repository
+ * @param name The name of the repository
+ * @returns The average time for the first pull request
+ */
+async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub(owner, name);
 
   let hasNextPage = true;
@@ -89,7 +95,7 @@ export default async function calculateAverageTimeForFirstPR(owner: string, name
     const most = Math.max(...firstPRDates);
     const averageFirstPRTime = least / most;
 
-    logger.info(`Average time for first PR: ${averageFirstPRTime}`);
+    logger.info(`Ramp-up score for ${owner}/${name}: ${averageFirstPRTime}`);
     return averageFirstPRTime;
   } catch (error) {
     logger.error("Error fetching pull requests:", error);
@@ -97,7 +103,12 @@ export default async function calculateAverageTimeForFirstPR(owner: string, name
   }
 }
 
-export async function getNpmRampUp(packageName: string): Promise<number> {
+/**
+ * Fetches the ramp-up score for a package on NPM
+ * @param packageName The name of the package
+ * @returns The ramp-up score for the package
+ */
+async function getNpmRampUp(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
   let name: string = "";
@@ -120,4 +131,18 @@ export async function getNpmRampUp(packageName: string): Promise<number> {
   }
   const rampUP: number = await calculateAverageTimeForFirstPR(owner, name);
   return rampUP;
+}
+
+/**
+ * Fetches the ramp-up score for a package on NPM
+ * @param ownerOrPackageName The owner or name of the package
+ * @param name The name of the package
+ * @returns The ramp-up score for the package
+ **/
+export default async function getRampUp(ownerOrPackageName: string, name?: string): Promise<number> {
+  if (name) {
+    return calculateAverageTimeForFirstPR(ownerOrPackageName, name);
+  } else {
+    return getNpmRampUp(ownerOrPackageName);
+  }
 }

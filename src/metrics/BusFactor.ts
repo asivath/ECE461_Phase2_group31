@@ -30,7 +30,13 @@ const query = `
   }
 `;
 
-export default async function getCommitsByUser(owner: string, name: string): Promise<number> {
+/**
+ * Fetches the commits by user from the GitHub API
+ * @param owner The owner of the repository
+ * @param name The name of the repository
+ * @returns The bus factor for the repository
+ */
+async function getCommitsByUser(owner: string, name: string): Promise<number> {
   const git_repo = new GitHub("graphql.js", "octokit");
 
   let hasNextPage = true;
@@ -125,7 +131,12 @@ export default async function getCommitsByUser(owner: string, name: string): Pro
   return busfactor;
 }
 
-export async function getNpmCommitsbyUser(packageName: string): Promise<number> {
+/**
+ * Fetches the bus factor score for a package on NPM
+ * @param packageName The name of the package
+ * @returns The bus factor score for the package
+ */
+async function getBusFactorScoreNPM(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
   let name: string = "";
@@ -148,4 +159,18 @@ export async function getNpmCommitsbyUser(packageName: string): Promise<number> 
   }
   const busFactor: number = await getCommitsByUser(owner, name);
   return busFactor;
+}
+
+/**
+ * Fetches the bus factor score for a repository or package
+ * @param ownerOrPackageName The owner of the repository or the name of the package
+ * @param name The name of the repository
+ * @returns The bus factor score for the repository or package
+ */
+export default async function getBusFactorScore(ownerOrPackageName: string, name?: string): Promise<number> {
+  if (name) {
+    return getCommitsByUser(ownerOrPackageName, name);
+  } else {
+    return getBusFactorScoreNPM(ownerOrPackageName);
+  }
 }

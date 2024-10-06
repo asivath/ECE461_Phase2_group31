@@ -148,7 +148,8 @@ async function calculateCorrectness(owner: string, repo: string) {
   logger.info(`Correctness for ${owner}/${repo}:`, correctness);
   return correctness;
 }
-export async function getNpmCorrectness(packageName: string): Promise<number> {
+
+async function getNpmCorrectness(packageName: string): Promise<number> {
   const npm_repo = new NPM(packageName);
   let owner: string = "";
   let name: string = "";
@@ -174,4 +175,10 @@ export async function getNpmCorrectness(packageName: string): Promise<number> {
   return correctness;
 }
 
-export default calculateCorrectness;
+export default async function getCorrectness(ownerOrPackageName: string, name?: string): Promise<number> {
+  if (name) {
+    return calculateCorrectness(ownerOrPackageName, name);
+  } else {
+    return getNpmCorrectness(ownerOrPackageName);
+  }
+}
