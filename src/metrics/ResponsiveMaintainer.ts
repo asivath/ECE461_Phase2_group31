@@ -163,10 +163,7 @@ async function getResponsiveMaintainerScoreNPM(packageName: string): Promise<num
  * @param name The name of the repository
  * @returns The responsiveness score for the repository or package
  */
-export default async function calculateResponsiveMaintainerScore(
-  ownerOrPackageName: string,
-  name?: string
-): Promise<number> {
+export default async function getResponsiveMaintainerScore(ownerOrPackageName: string, name?: string): Promise<number> {
   if (name) {
     return calculateResponsiveness(ownerOrPackageName, name);
   } else {

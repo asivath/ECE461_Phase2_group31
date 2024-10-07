@@ -7,7 +7,23 @@ describe("test function", () => {
   it("should fetch data from GitHub API", async () => {
     const github = new GitHub("graphql.js", "octokit");
 
-    const result = await github.getData(`
+    type RepoQueryResponse = {
+      data: {
+        repository: {
+          issues: {
+            totalCount: number;
+          };
+          closedIssues: {
+            totalCount: number;
+          };
+          bugIssues: {
+            totalCount: number;
+          };
+        };
+      };
+    };
+
+    const result = (await github.getData(`
       query($owner: String!, $repo: String!) {
         repository(owner: $owner, name: $repo) { 
           issues {
@@ -21,7 +37,7 @@ describe("test function", () => {
           }
         }
       }
-    `);
+    `)) as RepoQueryResponse;
 
     expect(result).toHaveProperty("data.repository");
     expect(result.data.repository).toHaveProperty("issues");

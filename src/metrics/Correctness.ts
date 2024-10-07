@@ -175,7 +175,7 @@ async function getNpmCorrectness(packageName: string): Promise<number> {
   return correctness;
 }
 
-export default async function getCorrectness(ownerOrPackageName: string, name?: string): Promise<number> {
+export default async function getCorrectnessScore(ownerOrPackageName: string, name?: string): Promise<number> {
   if (name) {
     return calculateCorrectness(ownerOrPackageName, name);
   } else {

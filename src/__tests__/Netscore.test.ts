@@ -1,8 +1,8 @@
-import { calculateMetrics } from "../metrics/Netscore.js";
+import calculateMetrics from "../metrics/Netscore";
 import { describe, it, beforeAll, expect } from "vitest";
 
 describe("Netscore Module", () => {
-  let result: Record<string, string>;
+  let result: Record<string, string | number>;
   beforeAll(async () => {
     result = await calculateMetrics("octokit", "graphql.js");
   }, 300000);

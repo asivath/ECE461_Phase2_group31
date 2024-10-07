@@ -1,5 +1,4 @@
-import getCommitsByUser from "../metrics/BusFactor.js";
-import { getNpmCommitsbyUser } from "../metrics/BusFactor.js";
+import getBusFactorScore from "../metrics/BusFactor";
 import { describe, it, expect, beforeAll, vi } from "vitest";
 
 beforeAll(async () => {
@@ -8,19 +7,15 @@ beforeAll(async () => {
 });
 
 describe("BusFactor Module", () => {
-  describe("getCommitsByUser", () => {
-    it("should calculate commits per user, sort them, and output the number of critical users", async () => {
-      const result = await getCommitsByUser("octokit", "graphql.js");
-      expect(result).toBeGreaterThanOrEqual(0);
-      expect(result).toBeLessThanOrEqual(100000); // Assuming a reasonable upper limit for lines of code
-    }, 10000); // Increase the timeout to 10 seconds
-  });
+  it("should calculate commits per user, sort them, and output the number of critical users for a github url", async () => {
+    const result = await getBusFactorScore("octokit", "graphql.js");
+    expect(result).toBeGreaterThanOrEqual(0);
+    expect(result).toBeLessThanOrEqual(100000);
+  }, 10000);
 
-  describe("getCommitsByUser for NPM", () => {
-    it("should calculate commits per user, sort them, and output the number of critical users", async () => {
-      const result = await getNpmCommitsbyUser("express");
-      expect(result).toBeGreaterThanOrEqual(0);
-      expect(result).toBeLessThanOrEqual(100000); // Assuming a reasonable upper limit for lines of code
-    }, 100000); // Increase the timeout to 10 seconds
-  });
+  it("should calculate commits per user, sort them, and output the number of critical users for a npm url", async () => {
+    const result = await getBusFactorScore("express");
+    expect(result).toBeGreaterThanOrEqual(0);
+    expect(result).toBeLessThanOrEqual(100000);
+  }, 100000);
 });

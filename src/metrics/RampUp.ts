@@ -139,7 +139,7 @@ async function getNpmRampUp(packageName: string): Promise<number> {
  * @param name The name of the package
  * @returns The ramp-up score for the package
  **/
-export default async function getRampUp(ownerOrPackageName: string, name?: string): Promise<number> {
+export default async function getRampUpScore(ownerOrPackageName: string, name?: string): Promise<number> {
   if (name) {
     return calculateAverageTimeForFirstPR(ownerOrPackageName, name);
   } else {
