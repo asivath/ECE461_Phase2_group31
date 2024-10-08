@@ -1,4 +1,3 @@
-import axios from "axios";
 import "dotenv/config";
 import { getLogger } from "./logger.js";
 
@@ -33,8 +32,16 @@ export class GitHub extends API {
       }
     };
     try {
-      const response = await axios.post(url, data, { headers });
-      return response.data;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...headers
+        },
+        body: JSON.stringify(data)
+      });
+      const responseData = await response.json();
+      return responseData;
     } catch (error) {
       logger.error("Error fetching package info:", error);
       throw error;

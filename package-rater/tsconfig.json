@@ -27,10 +27,12 @@
     /* Modules */
     "module": "NodeNext" /* Specify what module code is generated. */,
     "rootDir": "./src" /* Specify the root folder within your source files. */,
-    // "moduleResolution": "Node" /* Specify how TypeScript looks up a file from a given module specifier. */,
+    "moduleResolution": "NodeNext" /* Specify how TypeScript looks up a file from a given module specifier. */,
     "baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
     "paths": {
-      "src/*": ["src/*"]
+      "@app/*": ["../app/src/*"],
+      "@backend/*": ["../backend/src/*"],
+      "@shared/*": ["../shared/src/*"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
@@ -109,5 +111,5 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/__tests__", "src/dist"]
+  "exclude": ["src/__tests__", "src/dist"]
 }
