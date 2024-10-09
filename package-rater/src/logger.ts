@@ -34,7 +34,7 @@ const initializeLogger = () => {
     })
   );
 
-  const logDir = process.env.LOG_FILE || "app.log";
+  const logDir = process.env.LOG_FILE || "./app.log";
 
   bareLogger = winston.createLogger({
     level: logLevel,

@@ -26,6 +26,10 @@ jobs:
             echo "🚨 txt files detected. Please remove them." > disallowed_files.txt
             echo "disallowed_files_present=true" >> $GITHUB_OUTPUT
           fi
+          if git diff --name-only origin/main...HEAD | grep -E .yarn/cache; then
+            echo "🚨 .yarn/cache detected. Please remove them." > disallowed_files.txt
+            echo "disallowed_files_present=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Comment PR on disallowed files failure
         if: steps.check_files.outputs.disallowed_files_present == 'true'
@@ -53,16 +57,16 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install Dependencies
-        run: npm install
+        run: yarn
 
       - name: Run ESLint and Prettier
         id: lint_and_prettify
         run: |
-          npm run lint > eslint-output.txt || echo "eslint_failed=true" >> $GITHUB_OUTPUT
-          npm run format || echo "prettify_failed=true" >> $GITHUB_OUTPUT
+          yarn lint > eslint-output.txt || echo "eslint_failed=true" >> $GITHUB_OUTPUT
+          yarn format || echo "prettify_failed=true" >> $GITHUB_OUTPUT
 
       - name: Comment PR on ESLint/Prettier failure
         if: steps.lint_and_prettify.outputs.eslint_failed == 'true' || steps.lint_and_prettify.outputs.prettify_failed == 'true'
@@ -93,13 +97,13 @@ jobs:
         uses: actions/setup-node@v4
 
       - name: Install Dependencies
-        run: npm install
-      
+        run: yarn
+
       - name: Build the project
         id: build
         run: |
           set -o pipefail
-          if ! npm run build 2>&1 | tee build.log; then
+          if ! yarn build 2>&1 | tee build.log; then
             echo "build_failed=true" >> $GITHUB_OUTPUT
           fi
         continue-on-error: true
@@ -128,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOG_FILE: test_output.log
         run: |
-          npm run test:cicd > test_output.log 2>&1 || echo "test_failed=true" >> $GITHUB_OUTPUT
+          yarn test:cicd > test_output.log 2>&1 || echo "test_failed=true" >> $GITHUB_OUTPUT
 
       - name: Comment PR on test failure
         if: steps.run_tests.outputs.test_failed == 'true'

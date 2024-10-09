@@ -1,0 +1,53 @@
+{
+  "name": "package-rater",
+  "version": "1.0.0",
+  "description": "ECE 461 Project Phase 2",
+  "homepage": "https://github.com/asivath/ECE461_Phase2_group31#readme",
+  "bugs": {
+    "url": "https://github.com/asivath/ECE461_Phase2_group31/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asivath/ECE461_Phase2_group31.git"
+  },
+  "license": "MIT",
+  "author": "Aditya Sivathanu, Kevin Chang, Ellis Selznick",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "cli": "./dist/install.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint '**/*.{ts,mjs,json}' --fix",
+    "quality": "npm run format && npm run lint",
+    "start": "npm run build && node ./src/dist/index.js",
+    "test": "vitest run",
+    "test:cicd": "vitest run --coverage --no-color",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@vitest/coverage-v8": "^2.1.2",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "simple-git": "^3.27.0",
+    "vitest": "^2.1.2",
+    "winston": "^3.14.2"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^12.1.0",
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.9.1",
+    "@types/eslint__eslintrc": "^2.1.2",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.8.0"
+  }
+}
