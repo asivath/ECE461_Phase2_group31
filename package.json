@@ -19,14 +19,14 @@
     "package-rater"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach -A run build",
+    "build": "yarn workspaces foreach -A --parallel run build",
     "dev": "yarn workspace package-rater-app dev",
     "format": "yarn prettier --write app package-rater",
     "lint": "yarn workspaces foreach -A run lint",
     "quality": "yarn format && yarn lint && rm -rf node_modules",
     "test": "cd package-rater && yarn test",
-    "test:cicd": "yarn workspaces package-rater test:cicd",
-    "test:coverage": "yarn workspaces package-rater run test:coverage"
+    "test:cicd": "yarn workspace package-rater test:cicd",
+    "test:coverage": "yarn workspace package-rater run test:coverage"
   },
   "devDependencies": {
     "eslint": "^9.11.1",

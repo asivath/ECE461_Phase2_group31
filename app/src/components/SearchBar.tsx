@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextField, InputAdornment, Button, Box, Typography } from "@mui/material";
+import { TextField, InputAdornment, Button, Box, Typography, useTheme } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
 type SearchBarProps = {
@@ -11,7 +11,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
   };
-
+  const theme = useTheme();
   return (
     <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" width="100%" px={3}>
       <Typography variant="h4" mb={2}>
@@ -45,9 +45,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
               <InputAdornment position="end">
                 <Button
                   variant="contained"
-                  color="primary"
                   onClick={() => onSearch(searchValue)}
-                  sx={{ borderRadius: 3 }}>
+                  sx={{ borderRadius: 3, background: theme.palette.primary.main }}>
                   Search
                 </Button>
               </InputAdornment>
