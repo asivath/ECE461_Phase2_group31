@@ -7,5 +7,8 @@ export default defineConfig({
   plugins: [react(), IstanbulPlugin()],
   server: {
     open: true
+  },
+  build: {
+    sourcemap: "hidden"
   }
 });

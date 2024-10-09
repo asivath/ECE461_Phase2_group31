@@ -12,8 +12,10 @@
     "vitest-run": "vitest run",
     "test": "yarn playwright test",
     "test:watch": "yarn playwright test --ui",
-    "test:cicd": "CI=true yarn test",
-    "test:coverage": "nyc yarn test"
+    "test:ci": "CI=true yarn test",
+    "test:coverage": "nyc yarn test && nyc check-coverage",
+    "test:coverage-ci": "nyc yarn test:ci && nyc check-coverage",
+    "clean": "rm -rf .nyc_output test-results node_modules coverage playwright-report"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",

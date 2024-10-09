@@ -23,12 +23,13 @@
     "quality": "npm run format && npm run lint",
     "start": "npm run build && node ./src/dist/index.js",
     "test": "vitest run",
-    "test:cicd": "vitest run --coverage --no-color",
+    "test:ci": "vitest run --no-color",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:coverage-ci": "vitest run --coverage --no-color",
+    "test:watch": "vitest",
+    "clean": "rm -rf coverage node_modules"
   },
   "dependencies": {
-    "@vitest/coverage-v8": "^2.1.2",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "simple-git": "^3.27.0",
@@ -44,10 +45,11 @@
     "@types/node": "^22.7.4",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
+    "@vitest/coverage-istanbul": "2.1.2",
     "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.5.4",
+    "typescript": "5.5.4",
     "typescript-eslint": "^8.8.0"
   }
 }

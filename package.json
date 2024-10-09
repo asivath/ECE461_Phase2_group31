@@ -21,18 +21,19 @@
   "scripts": {
     "build": "yarn workspaces foreach -A --parallel run build",
     "dev": "yarn workspace package-rater-app dev",
-    "format": "yarn prettier --write app/src package-rater/src",
-    "lint": "yarn workspaces foreach -A run lint",
-    "quality": "yarn format && yarn lint && rm -rf node_modules",
-    "test": "yarn workspaces foreach -A run test",
-    "test:cicd": "yarn workspace foreach -A --parallel run test:cicd",
-    "test:coverage": "yarn workspace package-rater run test:coverage"
+    "format": "yarn prettier --write app/src package-rater/src '*.json'",
+    "lint": "cd app && yarn lint && cd ../package-rater && yarn lint",
+    "quality": "yarn format && yarn lint && yarn clean",
+    "test": "yarn workspaces foreach -A --parallel run test",
+    "test:ci": "yarn workspacse foreach -A --parallel run test:ci",
+    "test:coverage": "yarn workspaces foreach -A --parallel run test:coverage",
+    "test:coverage-ci": "yarn workspaces foreach -A --parallel run test:coverage-ci",
+    "clean": "yarn workspaces foreach -A run clean && rm -rf coverage node_modules"
   },
   "devDependencies": {
     "eslint": "^9.11.1",
     "prettier": "^3.3.3",
-    "typescript": "5.5.4",
-    "vitest": "^2.1.2"
+    "typescript": "5.5.4"
   },
   "packageManager": "yarn@4.5.0"
 }

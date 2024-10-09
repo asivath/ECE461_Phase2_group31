@@ -97,7 +97,7 @@ jobs:
         uses: actions/setup-node@v4
 
       - name: Install Dependencies
-        run: yarn
+        run: yarn && yarn dlx playwright install --with-deps
 
       - name: Build the project
         id: build
@@ -132,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOG_FILE: test_output.log
         run: |
-          yarn test:cicd > test_output.log 2>&1 || echo "test_failed=true" >> $GITHUB_OUTPUT
+          yarn test:coverage-ci > test_output.log 2>&1 || echo "test_failed=true" >> $GITHUB_OUTPUT
 
       - name: Comment PR on test failure
         if: steps.run_tests.outputs.test_failed == 'true'
