@@ -9,6 +9,8 @@ import { getNpmCorrectness } from "./Correctness.js";
 import { checkLicenseCompatibilityNPM } from "./Licensing.js";
 import { getNpmRampUp } from "./RampUp.js";
 import { getNpmResponsiveness } from "./Responsiveness.js";
+import { calculateDependencies } from "./Depencencies.js";
+import {calculateNpmDependencies} from "./Depencencies.js";
 
 // Wrap functions with timeWrapper
 const wrappedCalculateCorrectness = timeWrapper(calculateCorrectness);
@@ -16,12 +18,14 @@ const wrappedCheckLicenseCompatibility = timeWrapper(checkLicenseCompatibility);
 const wrappedCalculateAverageTimeForFirstPR = timeWrapper(calculateAverageTimeForFirstPR);
 const wrappedGetIssueResponseTimes = timeWrapper(getIssueResponseTimes);
 const wrappedGetCommitsByUser = timeWrapper(getCommitsByUser);
+const wrappedGetDependencies = timeWrapper(calculateDependencies);
 
 const wrappedGetNpmCommitsbyUser = timeWrapper(getNpmCommitsbyUser);
 const wrappedGetNpmCorrectness = timeWrapper(getNpmCorrectness);
 const wrappedCheckLicenseCompatibilityNPM = timeWrapper(checkLicenseCompatibilityNPM);
 const wrappedGetNpmRampUp = timeWrapper(getNpmRampUp);
 const wrappedGetNpmResponsiveness = timeWrapper(getNpmResponsiveness);
+const wrappedGetNpmDependencies = timeWrapper(calculateNpmDependencies);
 
 type MetricCalculator = {
   calculateCorrectness(ownerOrPackage: string, repo?: string): Promise<{ result: number; time: number }>;
@@ -29,6 +33,7 @@ type MetricCalculator = {
   calculateRampUp(ownerOrPackage: string, repo?: string): Promise<{ result: number; time: number }>;
   calculateResponsiveness(ownerOrPackage: string, repo?: string): Promise<{ result: number; time: number }>;
   calculateBusFactor(ownerOrPackage: string, repo?: string): Promise<{ result: number; time: number }>;
+  calculateDependencies(ownerOrPackage: string, repo?: string): Promise<{ result: number; time: number }>;
   getUrl(ownerOrPackage: string, repo?: string): string;
 };
 
@@ -51,6 +56,10 @@ class GitHubMetricCalculator implements MetricCalculator {
 
   async calculateBusFactor(owner: string, repo: string): Promise<{ result: number; time: number }> {
     return await wrappedGetCommitsByUser(owner, repo);
+  }
+
+  async calculateDependencies(owner: string, repo: string): Promise<{ result: number; time: number }> {
+    return await wrappedGetDependencies(owner, repo);
   }
 
   getUrl(owner: string, repo: string): string {
@@ -77,6 +86,10 @@ class NpmMetricCalculator implements MetricCalculator {
 
   async calculateBusFactor(packageName: string): Promise<{ result: number; time: number }> {
     return await wrappedGetNpmCommitsbyUser(packageName);
+  }
+
+  async calculateDependencies(packageName: string): Promise<{ result: number; time: number }> {
+    return await wrappedGetNpmDependencies(packageName);
   }
 
   getUrl(packageName: string): string {

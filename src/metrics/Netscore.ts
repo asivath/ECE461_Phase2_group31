@@ -2,13 +2,16 @@ import { MetricCalculatorFactory } from "./MetricCalculator.js";
 
 async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<Record<string, string | number>> {
   const calculator = MetricCalculatorFactory.create(repo);
-  const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor] = await Promise.all([
+  const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor, dependencies] = await Promise.all([
     calculator.calculateCorrectness(ownerOrPackage, repo),
     calculator.calculateLicenseCompatibility(ownerOrPackage, repo),
     calculator.calculateRampUp(ownerOrPackage, repo),
     calculator.calculateResponsiveness(ownerOrPackage, repo),
-    calculator.calculateBusFactor(ownerOrPackage, repo)
+    calculator.calculateBusFactor(ownerOrPackage, repo),
+    calculator.calculateDependencies(ownerOrPackage, repo)
   ]);
+
+  console.log("dependencies", dependencies);
 
   const netscore =
     0.15 * busFactor.result +
@@ -34,7 +37,7 @@ async function calculateMetrics(ownerOrPackage: string, repo?: string): Promise<
     ResponsiveMaintainer: parseFloat(responsiveness.result.toFixed(2)),
     ResponsiveMaintainer_Latency: parseFloat(responsiveness.time.toFixed(2)),
     License: parseFloat(licenseCompatibility.result.toFixed(2)),
-    License_Latency: parseFloat(licenseCompatibility.time.toFixed(2))
+    License_Latency: parseFloat(licenseCompatibility.time.toFixed(2)),
   };
 
   return ndjsonOutput;
