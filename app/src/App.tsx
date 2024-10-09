@@ -12,7 +12,7 @@ function App() {
         <NavBar />
       </Box>
       <Box display="flex" flex="1" alignItems="center" justifyContent="center" width="50%">
-        <SearchBar onSearch={(searchValue) => console.log(searchValue)} />
+        <SearchBar onSearch={(searchValue) => console.error(searchValue)} />
       </Box>
     </Box>
   );

@@ -4,7 +4,8 @@ export default defineConfig({
   test: {
     include: ["src/__tests__/**.test.ts"],
     coverage: {
-      reporter: ["json-summary", "html"],
+      provider: "istanbul",
+      reporter: ["json-summary", "html", "json"],
       include: ["src/**"],
       exclude: ["src/__tests__/**", "src/dist/**"],
       // thresholds: {
@@ -12,7 +13,6 @@ export default defineConfig({
       //   functions: 100,
       //   lines: 80
       // },
-      ignoreEmptyLines: true,
       reportOnFailure: true
     },
     hookTimeout: 30000
