@@ -24,14 +24,15 @@
     "format": "yarn prettier --write app/src package-rater/src",
     "lint": "yarn workspaces foreach -A run lint",
     "quality": "yarn format && yarn lint && rm -rf node_modules",
-    "test": "cd package-rater && yarn test",
-    "test:cicd": "yarn workspace package-rater test:cicd",
+    "test": "yarn workspaces foreach -A run test",
+    "test:cicd": "yarn workspace foreach -A --parallel run test:cicd",
     "test:coverage": "yarn workspace package-rater run test:coverage"
   },
   "devDependencies": {
     "eslint": "^9.11.1",
     "prettier": "^3.3.3",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "vitest": "^2.1.2"
   },
   "packageManager": "yarn@4.5.0"
 }

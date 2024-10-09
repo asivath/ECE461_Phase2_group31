@@ -1,49 +1,39 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { Builder, By, ThenableWebDriver, logging } from "selenium-webdriver";
-import chrome from "selenium-webdriver/chrome";
+import { test, expect } from "./baseFixtures";
 
-let driver: ThenableWebDriver;
+test.describe("Main Page Tests", () => {
+  test("should load the main page and display the navbar with title and logo", async ({ page }) => {
+    await page.goto("http://localhost:5173");
 
-beforeAll(async () => {
-  const options = new chrome.Options();
-  options.addArguments("--no-sandbox");
-  options.addArguments("--headless");
-  driver = await new Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(options)
-    .setLoggingPrefs({ browser: "ALL" })
-    .build();
-});
+    const navbar = page.locator(".MuiToolbar-root");
+    await expect(navbar).toBeVisible();
 
-afterAll(async () => {
-  await driver.quit();
-});
+    const title = await navbar.innerText();
+    expect(title).toContain("package-rater");
 
-describe("Main Page Tests", () => {
-  it("should load the main page and display the navbar with title and logo", async () => {
-    await driver.get("http://localhost:5173");
-    const navbar = await driver.findElement(By.css(".MuiToolbar-root"));
-    expect(await navbar.isDisplayed()).toBe(true);
-
-    const title = await navbar.findElement(By.xpath(".//*[contains(text(), 'package-rater')]"));
-    expect(await title.isDisplayed()).toBe(true);
-
-    const logo = await navbar.findElement(By.css("img[alt='logo']"));
-    expect(await logo.isDisplayed()).toBe(true);
+    const logo = page.locator("img[alt='logo']");
+    await expect(logo).toBeVisible();
   });
-  it("should load the main page and display the search bar", async () => {
-    await driver.get("http://localhost:5173");
-    const searchBar = await driver.findElement(By.css('input[placeholder="Type package name..."]'));
-    expect(await searchBar.isDisplayed()).toBe(true);
+
+  test("should load the main page and display the search bar", async ({ page }) => {
+    await page.goto("http://localhost:5173");
+
+    const searchBar = page.locator('input[placeholder="Type package name..."]');
+    await expect(searchBar).toBeVisible();
   });
-  it("should load the main page and display the search button and when clicked should console log the input value", async () => {
-    await driver.get("http://localhost:5173");
-    const searchBar = await driver.findElement(By.css('input[placeholder="Type package name..."]'));
-    await searchBar.sendKeys("as;dlkfajs;ldkfja;s");
-    const searchButton = await driver.findElement(By.css("button"));
+
+  test("should load the main page and display the search button and when clicked should console log the input value", async ({
+    page
+  }) => {
+    await page.goto("http://localhost:5173");
+
+    const logs: string[] = [];
+    page.on("console", (msg) => logs.push(msg.text()));
+
+    const searchBar = page.locator('input[placeholder="Type package name..."]');
+    await searchBar.fill("as;dlkfajs;ldkfja;s");
+    const searchButton = page.locator("button");
     await searchButton.click();
-    const logs = await driver.manage().logs().get(logging.Type.BROWSER);
-    const logMessages = logs.map((log) => log.message);
-    expect(logMessages.some((message) => message.includes("as;dlkfajs;ldkfja;s"))).toBe(true);
+
+    expect(logs).toContain("as;dlkfajs;ldkfja;s");
   });
 });
