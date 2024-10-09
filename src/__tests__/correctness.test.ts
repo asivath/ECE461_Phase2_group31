@@ -1,6 +1,5 @@
-import calculateLOC from "../metrics/Correctness.js";
-import calculateCorrectness from "../metrics/Correctness.js";
-import { getNpmCorrectness } from "../metrics/Correctness.js";
+import calculateLOC from "../metrics/Correctness";
+import getCorrectnessScore from "../metrics/Correctness";
 import { describe, it, expect } from "vitest";
 
 describe("Correctness Module", () => {
@@ -8,13 +7,13 @@ describe("Correctness Module", () => {
     it("should correctly calculate lines of code", async () => {
       const result = await calculateLOC("octokit", "graphql.js");
       expect(result).toBeGreaterThanOrEqual(0);
-      expect(result).toBeLessThanOrEqual(100000); // Assuming a reasonable upper limit for lines of code
+      expect(result).toBeLessThanOrEqual(100000);
     });
   });
 
   describe("calculateCorrectness", () => {
-    it("should correctly calculate correctness score", async () => {
-      const result = await calculateCorrectness("octokit", "graphql.js");
+    it("should correctly calculate correctness score for github url", async () => {
+      const result = await getCorrectnessScore("octokit", "graphql.js");
       expect(result).toBeGreaterThanOrEqual(0);
       expect(result).toBeLessThanOrEqual(1);
     });
@@ -22,8 +21,8 @@ describe("Correctness Module", () => {
 });
 
 describe("calculateNPMCorrectness", () => {
-  it("should correctly calculate correctness score", async () => {
-    const result = await getNpmCorrectness("express");
+  it("should correctly calculate correctness score for npm url", async () => {
+    const result = await getCorrectnessScore("express");
     expect(result).toBeGreaterThanOrEqual(0);
     expect(result).toBeLessThanOrEqual(1);
   });
