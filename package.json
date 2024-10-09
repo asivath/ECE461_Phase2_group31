@@ -21,7 +21,7 @@
   "scripts": {
     "build": "yarn workspaces foreach -A --parallel run build",
     "dev": "yarn workspace package-rater-app dev",
-    "format": "yarn prettier --write app package-rater",
+    "format": "yarn prettier --write app/src package-rater/src",
     "lint": "yarn workspaces foreach -A run lint",
     "quality": "yarn format && yarn lint && rm -rf node_modules",
     "test": "cd package-rater && yarn test",
