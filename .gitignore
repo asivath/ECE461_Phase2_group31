@@ -4,9 +4,6 @@ dist
 coverage
 *.txt
 *.log
-app/tsconfig.app.tsbuildinfo
-app/tsconfig.app.tsbuildinfo
-app/tsconfig.node.tsbuildinfo
 .pnp.*
 .yarn/*
 !.yarn/patches

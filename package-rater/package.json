@@ -18,10 +18,10 @@
     "cli": "./dist/install.js"
   },
   "scripts": {
-    "start": "npm run build && node ./src/dist/index.js",
     "build": "tsc",
     "lint": "eslint '**/*.{ts,mjs,json}' --fix",
     "quality": "npm run format && npm run lint",
+    "start": "npm run build && node ./src/dist/index.js",
     "test": "vitest run",
     "test:cicd": "vitest run --coverage --no-color",
     "test:coverage": "vitest run --coverage",

@@ -1,13 +1,12 @@
 {
-  "name": "mono-repo-package-rater",
+  "name": "package-rater-monorepo",
   "version": "1.0.0",
+  "private": true,
   "description": "ECE 461 Project Phase 2",
   "homepage": "https://github.com/asivath/ECE461_Phase2_group31#readme",
-  "private": true,
   "bugs": {
     "url": "https://github.com/asivath/ECE461_Phase2_group31/issues"
   },
-  "packageManager": "yarn@4.5.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asivath/ECE461_Phase2_group31.git"
@@ -15,22 +14,24 @@
   "license": "MIT",
   "author": "Aditya Sivathanu, Kevin Chang, Ellis Selznick",
   "type": "module",
+  "workspaces": [
+    "app",
+    "package-rater"
+  ],
   "scripts": {
     "build": "yarn workspaces foreach -A run build",
+    "dev": "yarn workspace package-rater-app dev",
     "format": "yarn prettier --write app package-rater",
     "lint": "yarn workspaces foreach -A run lint",
-    "quality": "yarn format && yarn lint",
-    "test": "yarn workspaces foreach -A run test",
-    "test:cicd": "yarn workspaces foreach -A run test:cicd --if-present",
-    "test:coverage": "yarn workspaces foreach -A run test:coverage --if-present"
+    "quality": "yarn format && yarn lint && rm -rf node_modules",
+    "test": "cd package-rater && yarn test",
+    "test:cicd": "yarn workspaces package-rater test:cicd",
+    "test:coverage": "yarn workspaces package-rater run test:coverage"
   },
   "devDependencies": {
     "eslint": "^9.11.1",
     "prettier": "^3.3.3",
-    "typescript": "^5.5.4"
+    "typescript": "5.5.4"
   },
-  "workspaces": [
-    "app",
-    "package-rater"
-  ]
+  "packageManager": "yarn@4.5.0"
 }
