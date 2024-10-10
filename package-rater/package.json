@@ -20,8 +20,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint '**/*.{ts,mjs,json}' --fix",
-    "quality": "npm run format && npm run lint",
-    "start": "npm run build && node ./src/dist/index.js",
+    "quality": "yarn format && yarn lint",
+    "start": "yarn build && node dist/index.js",
     "test": "vitest run",
     "test:ci": "vitest run --no-color",
     "test:coverage": "vitest run --coverage",
