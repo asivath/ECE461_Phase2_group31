@@ -8,8 +8,6 @@
     "dev": "vite",
     "lint": "eslint src --fix",
     "preview": "vite preview",
-    "serve": "vite preview --port 5173",
-    "vitest-run": "vitest run",
     "test": "yarn playwright test",
     "test:watch": "yarn playwright test --ui",
     "test:ci": "CI=true yarn test",

@@ -4,8 +4,10 @@ set -o pipefail
 # Function to run the install mode
 install_mode() {
   echo "Running install mode..."
-  npm install
-  npx tsc
+  corepack enable
+  yarn set version berry
+  yarn install
+  yarn build
 }
 
 # Function to run the URL_File mode
@@ -15,13 +17,13 @@ url_file_mode() {
     exit 1
   fi
   URL_FILE="$1"
-  node src/dist/index.js $URL_FILE
+  yarn start $URL_FILE
 }
 
 # Function to run the test mode
 test_mode() {
   # echo "Running tests..."
-  node src/dist/index.js test
+  yarn start test
   # npx jest --coverage
 }
 
