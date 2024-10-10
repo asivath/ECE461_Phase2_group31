@@ -1,5 +1,5 @@
 import { getLogger } from "../logger.js";
-import { getGitHubData } from "src/graphql.js";
+import { getGitHubData } from "../graphql.js";
 
 const logger = getLogger();
 
@@ -97,9 +97,8 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
         }
       }
     }`;
-
     const result = (await getGitHubData(repo, owner, query)) as RepositoryData;
-
+ 
     let totalLines = 0;
     function countLines(text: string) {
       return text.split("\n").length;
@@ -131,9 +130,9 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
 }
 
 export async function calculateCorrectness(owner: string, repo: string) {
+
   const issuesData = await fetchIssues(owner, repo);
   const totalLinesOfCode = await calculateLOC(owner, repo);
-
   const totalIssues = issuesData.data.repository.issues.totalCount;
   const resolvedIssues = issuesData.data.repository.closedIssues.totalCount;
   const totalBugs = issuesData.data.repository.bugIssues.totalCount;

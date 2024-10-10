@@ -27,15 +27,14 @@ export async function getGitHubData(packageName: string, ownerName: string, requ
             },
             body: JSON.stringify(data)
         });
-
         const responseData = await response.json();
+        // console.log("responseData", responseData);
 
         // Check for errors in the GraphQL response
         if (responseData.errors) {
             logger.error("GraphQL errors:", responseData.errors);
             throw new Error("Error in GraphQL response");
         }
-
         return responseData;
     } catch (error) {
         logger.error("Error fetching package info:", error);

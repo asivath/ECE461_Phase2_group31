@@ -1,5 +1,5 @@
 import { getLogger } from "../logger.js";
-import { getGitHubData } from "src/graphql.js";
+import { getGitHubData } from "../graphql.js";
 
 const logger = getLogger();
 

@@ -21,7 +21,8 @@ async function processURLFile(file: string): Promise<void> {
       try {
         logger.info("*".repeat(80));
         logger.info(`Processing URL: ${url}`);
-        const result = await calculateMetrics(url);
+        const result = JSON.stringify(await (calculateMetrics(url)));
+        console.log(result);
         logger.info("Result:", result);
         logger.info("*".repeat(80));
       } catch (error) {

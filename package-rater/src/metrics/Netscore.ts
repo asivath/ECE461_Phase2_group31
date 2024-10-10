@@ -1,5 +1,5 @@
 import { getLogger } from "../logger.js";
-import { getGithubRepo } from "src/graphql.js";
+import { getGithubRepo } from "../graphql.js";
 import { calculateCorrectness } from "./Correctness.js";
 import { calculateLicense } from "./License.js";
 import { calculateRampup } from "./RampUp.js";
@@ -29,7 +29,6 @@ async function latencyWrapper(calculateFn: () => Promise<number>): Promise<{ res
 }
 
 async function getRepoOwner(url: string): Promise<[string, string] | null> {
-  console.log("I AM HERE");
   try {
     const response = await getGithubRepo(url);
     if (response) {
@@ -58,13 +57,12 @@ async function getRepoOwner(url: string): Promise<[string, string] | null> {
  * @returns The metrics for the package or repository
  */
 export default async function calculateMetrics(url: string): Promise<Record<string, string | number>> {
-console.log("I AM HERE");
   try {
     const repoInfo = await getRepoOwner(url);
     if (!repoInfo) {
       throw new Error(`Unable to retrieve repository information for URL: ${url}`);
     }
-    const [repoOwner, repoName] = repoInfo;
+    const [repoName, repoOwner] = repoInfo;
 
     const [correctness, licenseCompatibility, rampUp, responsiveness, busFactor] = await Promise.all([
       latencyWrapper(() => calculateCorrectness(repoOwner, repoName)),
