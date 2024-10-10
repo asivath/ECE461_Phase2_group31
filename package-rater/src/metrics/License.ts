@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 import { simpleGit } from "simple-git";
-import { NPM } from "../api.js";
 import { getLogger } from "../logger.js";
 
 const logger = getLogger();
@@ -48,7 +47,7 @@ const compatibilityTable = new Map([
  * @param repo The name of the repository
  * @returns The score of the license found in the LICENSE file or null if no license was found
  */
-async function parseLicenseScore(owner: string, repo: string): Promise<number> {
+export async function calculateLicense(owner: string, repo: string): Promise<number> {
   const url = `https://github.com/${owner}/${repo}`;
   const dir = "/tmp/cloned-repo";
   try {
@@ -92,44 +91,4 @@ async function parseLicenseScore(owner: string, repo: string): Promise<number> {
   }
   logger.info(`No license found for ${owner}/${repo}`);
   return 0;
-}
-
-/**
- * Check the license of an NPM package and return its compatibility score
- * @param packageName The name of the NPM package
- * @returns The compatibility score of the license
- */
-async function getLicenseScoreNPM(packageName: string): Promise<number> {
-  const npmRepo = new NPM(packageName);
-  try {
-    const repoUrl = await npmRepo.getData();
-    if (repoUrl) {
-      const cleanUrl = repoUrl.replace(/^git\+/, "").replace(/\.git$/, "");
-      const url = new URL(cleanUrl);
-      const [owner, name] = url.pathname.split("/").filter(Boolean);
-
-      if (owner && name) {
-        return parseLicenseScore(owner, name);
-      } else {
-        throw new Error(`Invalid package URL format: ${repoUrl}`);
-      }
-    }
-  } catch (error) {
-    logger.error(`Failed to fetch package info for ${packageName}:`, error);
-  }
-  return 0;
-}
-
-/**
- * Fetches the license score for a repository or package
- * @param ownerOrPackageName The owner of the repository or the name of the package
- * @param name The name of the repository
- * @returns The license score for the repository or package
- */
-export default async function getLicenseScore(ownerOrPackageName: string, name?: string): Promise<number> {
-  if (name) {
-    return parseLicenseScore(ownerOrPackageName, name);
-  } else {
-    return getLicenseScoreNPM(ownerOrPackageName);
-  }
 }
