@@ -1,5 +1,5 @@
-import { NPM, GitHub } from "../api.js";
 import { getLogger } from "../logger.js";
+import { getGitHubData } from "../graphql.js";
 
 const logger = getLogger();
 
@@ -21,7 +21,6 @@ type IssuesData = {
 
 async function fetchIssues(owner: string, repo: string): Promise<IssuesData> {
   try {
-    const githubRepo = new GitHub(repo, owner);
     const query = `
         query($owner: String!, $repo: String!) {
           repository(owner: $owner, name: $repo) { 
@@ -38,7 +37,7 @@ async function fetchIssues(owner: string, repo: string): Promise<IssuesData> {
         }
       `;
 
-    const result = await githubRepo.getData(query);
+    const result = await getGitHubData(repo, owner, query);
     logger.info(`Fetched issues for ${owner}/${repo}:`, result);
     return result as IssuesData;
   } catch (error) {
@@ -51,7 +50,6 @@ async function fetchIssues(owner: string, repo: string): Promise<IssuesData> {
 
 async function calculateLOC(owner: string, repo: string): Promise<number> {
   try {
-    const githubRepo = new GitHub(repo, owner);
     type TreeEntry = {
       name: string;
       type: string;
@@ -99,9 +97,8 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
         }
       }
     }`;
-
-    const result = (await githubRepo.getData(query)) as RepositoryData;
-
+    const result = (await getGitHubData(repo, owner, query)) as RepositoryData;
+ 
     let totalLines = 0;
     function countLines(text: string) {
       return text.split("\n").length;
@@ -132,10 +129,10 @@ async function calculateLOC(owner: string, repo: string): Promise<number> {
   }
 }
 
-async function calculateCorrectness(owner: string, repo: string) {
+export async function calculateCorrectness(owner: string, repo: string) {
+
   const issuesData = await fetchIssues(owner, repo);
   const totalLinesOfCode = await calculateLOC(owner, repo);
-
   const totalIssues = issuesData.data.repository.issues.totalCount;
   const resolvedIssues = issuesData.data.repository.closedIssues.totalCount;
   const totalBugs = issuesData.data.repository.bugIssues.totalCount;
@@ -147,38 +144,4 @@ async function calculateCorrectness(owner: string, repo: string) {
   const correctness = 0.7 * resolvedIssuesRatio + 0.3 * (1 - normalizedBugRatio);
   logger.info(`Correctness for ${owner}/${repo}:`, correctness);
   return correctness;
-}
-
-async function getNpmCorrectness(packageName: string): Promise<number> {
-  const npm_repo = new NPM(packageName);
-  let owner: string = "";
-  let name: string = "";
-  try {
-    const response = await npm_repo.getData();
-    if (response) {
-      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
-      const url = new URL(cleanUrl);
-      const pathnameParts = url.pathname.split("/").filter(Boolean);
-      if (pathnameParts.length === 2) {
-        owner = pathnameParts[0];
-        name = pathnameParts[1];
-      } else {
-        logger.error(`Invalid package URL: ${response}`);
-        throw new Error(`Invalid package URL: ${response}`);
-      }
-    }
-  } catch (error) {
-    logger.error(`Error fetching package info for ${packageName}:`, error);
-  }
-  const correctness: number = await calculateCorrectness(owner, name);
-  logger.info(`Correctness for ${packageName}:`, correctness);
-  return correctness;
-}
-
-export default async function getCorrectnessScore(ownerOrPackageName: string, name?: string): Promise<number> {
-  if (name) {
-    return calculateCorrectness(ownerOrPackageName, name);
-  } else {
-    return getNpmCorrectness(ownerOrPackageName);
-  }
 }

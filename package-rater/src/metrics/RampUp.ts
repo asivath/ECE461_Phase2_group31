@@ -1,4 +1,4 @@
-import { NPM, GitHub } from "../api.js";
+import { getGitHubData } from "../graphql.js";
 import { getLogger } from "../logger.js";
 
 const logger = getLogger();
@@ -53,8 +53,7 @@ type PullRequestsData = {
  * @param name The name of the repository
  * @returns The average time for the first pull request
  */
-async function calculateAverageTimeForFirstPR(owner: string, name: string): Promise<number> {
-  const git_repo = new GitHub(owner, name);
+export async function calculateRampup(owner: string, name: string): Promise<number> {
 
   let hasNextPage = true;
   let endCursor: string | null = null;
@@ -64,7 +63,7 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
   const maxPages = 3;
   try {
     while (hasNextPage && pageNumber < maxPages) {
-      const data = (await git_repo.getData(query, {
+      const data = (await getGitHubData(owner, name, query, {
         owner,
         name,
         after: endCursor
@@ -100,49 +99,5 @@ async function calculateAverageTimeForFirstPR(owner: string, name: string): Prom
   } catch (error) {
     logger.error("Error fetching pull requests:", error);
     throw error;
-  }
-}
-
-/**
- * Fetches the ramp-up score for a package on NPM
- * @param packageName The name of the package
- * @returns The ramp-up score for the package
- */
-async function getNpmRampUp(packageName: string): Promise<number> {
-  const npm_repo = new NPM(packageName);
-  let owner: string = "";
-  let name: string = "";
-  try {
-    const response = await npm_repo.getData();
-    if (response) {
-      const cleanUrl = response.replace(/^git\+/, "").replace(/\.git$/, "");
-      const url = new URL(cleanUrl);
-      const pathnameParts = url.pathname.split("/").filter(Boolean);
-      if (pathnameParts.length === 2) {
-        owner = pathnameParts[0];
-        name = pathnameParts[1];
-      } else {
-        logger.error(`Invalid package URL: ${response}`);
-        throw new Error(`Invalid package URL: ${response}`);
-      }
-    }
-  } catch (error) {
-    logger.error(`Error fetching package info for ${packageName}:`, error);
-  }
-  const rampUP: number = await calculateAverageTimeForFirstPR(owner, name);
-  return rampUP;
-}
-
-/**
- * Fetches the ramp-up score for a package on NPM
- * @param ownerOrPackageName The owner or name of the package
- * @param name The name of the package
- * @returns The ramp-up score for the package
- **/
-export default async function getRampUpScore(ownerOrPackageName: string, name?: string): Promise<number> {
-  if (name) {
-    return calculateAverageTimeForFirstPR(ownerOrPackageName, name);
-  } else {
-    return getNpmRampUp(ownerOrPackageName);
   }
 }

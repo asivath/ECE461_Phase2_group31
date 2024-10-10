@@ -21,15 +21,9 @@ async function processURLFile(file: string): Promise<void> {
       try {
         logger.info("*".repeat(80));
         logger.info(`Processing URL: ${url}`);
-        if (url.includes("github.com")) {
-          const [owner, repo] = url.split("github.com/")[1].split("/");
-          const result = await calculateMetrics(owner, url, repo);
-          console.log(JSON.stringify(result) + "\n");
-        } else if (url.includes("npmjs.com")) {
-          const packageName = url.split("package/")[1];
-          const result = await calculateMetrics(packageName, url);
-          console.log(JSON.stringify(result) + "\n");
-        }
+        const result = JSON.stringify(await (calculateMetrics(url)));
+        console.log(result);
+        logger.info("Result:", result);
         logger.info("*".repeat(80));
       } catch (error) {
         console.error(`Error processing URL ${url}:`, error);
