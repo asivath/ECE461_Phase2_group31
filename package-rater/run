@@ -4,7 +4,7 @@ set -o pipefail
 # Function to run the install mode
 install_mode() {
   echo "Running install mode..."
-  corepack enable
+  # corepack enable
   yarn set version berry
   yarn install
   yarn build
